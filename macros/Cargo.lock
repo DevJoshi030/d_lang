@@ -3,12 +3,5 @@
 version = 3
 
 [[package]]
-name = "d_lang"
-version = "0.1.0"
-dependencies = [
- "macros",
-]
-
-[[package]]
 name = "macros"
 version = "0.1.0"

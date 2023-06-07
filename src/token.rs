@@ -47,7 +47,22 @@ pub enum TokenType {
 
 pub struct Token {
     pub token_type: TokenType,
-    pub literal: char,
+    pub literal: String,
+}
+
+impl Token {
+    pub fn lookup_ident(ident: &str) -> TokenType {
+        match ident {
+            "fn" => TokenType::FUNCTION,
+            "let" => TokenType::LET,
+            "true" => TokenType::TRUE,
+            "false" => TokenType::FALSE,
+            "if" => TokenType::IF,
+            "else" => TokenType::ELSE,
+            "return" => TokenType::RETURN,
+            _ => TokenType::IDENT,
+        }
+    }
 }
 
 impl PartialEq for Token {

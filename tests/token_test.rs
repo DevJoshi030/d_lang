@@ -2,6 +2,7 @@ use d_lang::{
     lexer::Lexer,
     token::{self, Token},
 };
+use macros::string_from;
 
 #[test]
 fn test_next_token() {
@@ -10,50 +11,53 @@ fn test_next_token() {
     let tests = vec![
         Token {
             token_type: token::TokenType::ASSIGN,
-            literal: '=',
+            literal: string_from!("="),
         },
         Token {
             token_type: token::TokenType::PLUS,
-            literal: '+',
+            literal: string_from!("+"),
         },
         Token {
             token_type: token::TokenType::LPAREN,
-            literal: '(',
+            literal: string_from!("("),
         },
         Token {
             token_type: token::TokenType::RPAREN,
-            literal: ')',
+            literal: string_from!(")"),
         },
         Token {
             token_type: token::TokenType::LBRACE,
-            literal: '{',
+            literal: string_from!("{"),
         },
         Token {
             token_type: token::TokenType::RBRACE,
-            literal: '}',
+            literal: string_from!("}"),
         },
         Token {
             token_type: token::TokenType::COMMA,
-            literal: ',',
+            literal: string_from!(","),
         },
         Token {
             token_type: token::TokenType::SEMICOLON,
-            literal: ';',
+            literal: string_from!(";"),
         },
         Token {
             token_type: token::TokenType::EOF,
-            literal: '\0',
+            literal: string_from!("\0"),
         },
     ];
 
     let mut l = Lexer::new(input);
 
-    tests.iter().for_each(|tt| {
-        let tok = l.next_token();
-        if tok != *tt {
+    tests.iter().for_each(|test_token| {
+        let input_token = l.next_token();
+        if input_token != *test_token {
             panic!(
                 "Error in token: expected: ({:#?}, {:#?}), got ({:#?}, {:#?})",
-                tt.token_type, tt.literal, tok.token_type, tok.literal
+                test_token.token_type,
+                test_token.literal,
+                input_token.token_type,
+                input_token.literal
             );
         }
     });
