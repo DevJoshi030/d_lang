@@ -13,7 +13,7 @@ impl Lexer {
             input,
             position: 0,
             read_position: 0,
-            ch: ' ',
+            ch: '\0',
         };
 
         l.read_char();
@@ -27,43 +27,21 @@ impl Lexer {
     }
 
     pub fn next_token(&mut self) -> Token {
-        let mut t = Token {
-            token_type: token::TokenType::ILLEGAL,
+        let t = Token {
+            token_type: match self.ch {
+                '=' => token::TokenType::ASSIGN,
+                ';' => token::TokenType::SEMICOLON,
+                '(' => token::TokenType::LPAREN,
+                ')' => token::TokenType::RPAREN,
+                ',' => token::TokenType::COMMA,
+                '+' => token::TokenType::PLUS,
+                '{' => token::TokenType::LBRACE,
+                '}' => token::TokenType::RBRACE,
+                '\0' => token::TokenType::EOF,
+                _ => token::TokenType::ILLEGAL,
+            },
             literal: self.ch,
         };
-
-        match self.ch {
-            '=' => {
-                t.token_type = token::TokenType::ASSIGN;
-            }
-            ';' => {
-                t.token_type = token::TokenType::SEMICOLON;
-            }
-            '(' => {
-                t.token_type = token::TokenType::LPAREN;
-            }
-            ')' => {
-                t.token_type = token::TokenType::RPAREN;
-            }
-            ',' => {
-                t.token_type = token::TokenType::COMMA;
-            }
-            '+' => {
-                t.token_type = token::TokenType::PLUS;
-            }
-            '{' => {
-                t.token_type = token::TokenType::LBRACE;
-            }
-            '}' => {
-                t.token_type = token::TokenType::RBRACE;
-            }
-            '\0' => {
-                t.token_type = token::TokenType::EOF;
-            }
-            _ => {
-                t.token_type = token::TokenType::ILLEGAL;
-            }
-        }
 
         self.read_char();
         return t;

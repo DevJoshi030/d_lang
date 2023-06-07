@@ -52,9 +52,8 @@ fn test_next_token() {
         let tok = l.next_token();
         if tok != *tt {
             panic!(
-                "Error in token: expected: {}, got {}",
-                tt.token_type.value(),
-                tok.token_type.value()
+                "Error in token: expected: ({:#?}, {:#?}), got ({:#?}, {:#?})",
+                tt.token_type, tt.literal, tok.token_type, tok.literal
             );
         }
     });
