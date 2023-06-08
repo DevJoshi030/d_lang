@@ -113,7 +113,7 @@ fn test_next_token() {
         },
         Token {
             token_type: token::TokenType::RBRACE,
-            literal: string_from!(")}"),
+            literal: string_from!("}"),
         },
         Token {
             token_type: token::TokenType::SEMICOLON,

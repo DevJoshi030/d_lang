@@ -27,7 +27,6 @@ impl Lexer {
     }
 
     pub fn next_token(&mut self) -> Token {
-        println!("ch -> {}", self.ch);
         self.skip_white_space();
         let mut literal = self.ch.to_string();
         let t = Token {
@@ -46,9 +45,17 @@ impl Lexer {
                     if Lexer::is_letter(ch) {
                         literal = self.read_identifier().into_iter().collect();
                         t_type = Token::lookup_ident(&literal);
+                        return Token {
+                            token_type: t_type,
+                            literal,
+                        };
                     } else if Lexer::is_digit(ch) {
                         literal = self.read_number().into_iter().collect();
                         t_type = TokenType::INT;
+                        return Token {
+                            token_type: t_type,
+                            literal,
+                        };
                     } else {
                         t_type = token::TokenType::ILLEGAL
                     }
@@ -80,7 +87,7 @@ impl Lexer {
     }
 
     fn skip_white_space(&mut self) {
-        while (self.ch == ' ' || self.ch == '\t' || self.ch == '\n' || self.ch == '\r') {
+        while self.ch == ' ' || self.ch == '\t' || self.ch == '\n' || self.ch == '\r' {
             self.read_char();
         }
     }
