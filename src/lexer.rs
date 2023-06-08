@@ -37,8 +37,14 @@ impl Lexer {
                 ')' => token::TokenType::RPAREN,
                 ',' => token::TokenType::COMMA,
                 '+' => token::TokenType::PLUS,
+                '-' => token::TokenType::MINUS,
                 '{' => token::TokenType::LBRACE,
                 '}' => token::TokenType::RBRACE,
+                '!' => token::TokenType::BANG,
+                '*' => token::TokenType::ASTERISK,
+                '<' => token::TokenType::LT,
+                '>' => token::TokenType::GT,
+                '/' => token::TokenType::SLASH,
                 '\0' => token::TokenType::EOF,
                 ch => {
                     let t_type: TokenType;

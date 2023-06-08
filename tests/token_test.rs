@@ -1,6 +1,6 @@
 use d_lang::{
     lexer::Lexer,
-    token::{self, Token},
+    token::{Token, TokenType::*},
 };
 use macros::string_from;
 
@@ -8,48 +8,23 @@ use macros::string_from;
 fn test_next_token() {
     let input = "=+(){},;".chars().collect();
 
-    let tests = vec![
-        Token {
-            token_type: token::TokenType::ASSIGN,
-            literal: string_from!("="),
-        },
-        Token {
-            token_type: token::TokenType::PLUS,
-            literal: string_from!("+"),
-        },
-        Token {
-            token_type: token::TokenType::LPAREN,
-            literal: string_from!("("),
-        },
-        Token {
-            token_type: token::TokenType::RPAREN,
-            literal: string_from!(")"),
-        },
-        Token {
-            token_type: token::TokenType::LBRACE,
-            literal: string_from!("{"),
-        },
-        Token {
-            token_type: token::TokenType::RBRACE,
-            literal: string_from!("}"),
-        },
-        Token {
-            token_type: token::TokenType::COMMA,
-            literal: string_from!(","),
-        },
-        Token {
-            token_type: token::TokenType::SEMICOLON,
-            literal: string_from!(";"),
-        },
-        Token {
-            token_type: token::TokenType::EOF,
-            literal: string_from!("\0"),
-        },
+    let literals = vec!["=", "+", "(", ")", "{", "}", ",", ";", "\0"];
+    let token_types = vec![
+        ASSIGN, PLUS, LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMICOLON, EOF,
     ];
+
+    let test_tokens: Vec<Token> = token_types
+        .iter()
+        .zip(literals)
+        .map(|(token_type, literal)| Token {
+            token_type: *token_type,
+            literal: string_from!(literal),
+        })
+        .collect();
 
     let mut l = Lexer::new(input);
 
-    tests.iter().for_each(|test_token| {
+    test_tokens.iter().for_each(|test_token| {
         let input_token = l.next_token();
         if input_token != *test_token {
             panic!(
