@@ -44,6 +44,7 @@ impl Lexer {
                     TokenType::ASSIGN
                 }
                 ';' => TokenType::SEMICOLON,
+                ':' => TokenType::COLON,
                 '(' => TokenType::LPAREN,
                 ')' => TokenType::RPAREN,
                 ',' => TokenType::COMMA,
