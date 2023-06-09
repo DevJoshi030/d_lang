@@ -11,20 +11,35 @@ fn test_next_token() {
     let add = fn(x, y) {
     x + y;
     };
-    let result = add(five, ten);"
+    let result = add(five, ten);
+    !-/*5;
+    5 < 10 > 5;
+
+    if (5 < 10) {
+        return true;
+    } else {
+        return false;
+    }
+    
+    10 == 10;
+    10 != 9;"
         .chars()
         .collect();
 
     let literals = vec![
         "let", "five", "=", "5", ";", "let", "ten", "=", "10", ";", "let", "add", "=", "fn", "(",
         "x", ",", "y", ")", "{", "x", "+", "y", ";", "}", ";", "let", "result", "=", "add", "(",
-        "five", ",", "ten", ")", ";", "\0",
+        "five", ",", "ten", ")", ";", "!", "-", "/", "*", "5", ";", "5", "<", "10", ">", "5", ";",
+        "if", "(", "5", "<", "10", ")", "{", "return", "true", ";", "}", "else", "{", "return",
+        "false", ";", "}", "10", "==", "10", ";", "10", "!=", "9", ";", "\0",
     ];
     let token_types = vec![
         LET, IDENT, ASSIGN, INT, SEMICOLON, LET, IDENT, ASSIGN, INT, SEMICOLON, LET, IDENT, ASSIGN,
         FUNCTION, LPAREN, IDENT, COMMA, IDENT, RPAREN, LBRACE, IDENT, PLUS, IDENT, SEMICOLON,
         RBRACE, SEMICOLON, LET, IDENT, ASSIGN, IDENT, LPAREN, IDENT, COMMA, IDENT, RPAREN,
-        SEMICOLON, EOF,
+        SEMICOLON, BANG, MINUS, SLASH, ASTERISK, INT, SEMICOLON, INT, LT, INT, GT, INT, SEMICOLON,
+        IF, LPAREN, INT, LT, INT, RPAREN, LBRACE, RETURN, TRUE, SEMICOLON, RBRACE, ELSE, LBRACE,
+        RETURN, FALSE, SEMICOLON, RBRACE, INT, EQ, INT, SEMICOLON, INT, NOTEQ, INT, SEMICOLON, EOF,
     ];
 
     let test_tokens: Vec<Token> = token_types

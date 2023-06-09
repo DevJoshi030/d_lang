@@ -1,4 +1,4 @@
-use crate::token::{self, Token, TokenType};
+use crate::token::{Token, TokenType};
 
 pub struct Lexer {
     input: Vec<char>,
@@ -31,39 +31,59 @@ impl Lexer {
         let mut literal = self.ch.to_string();
         let t = Token {
             token_type: match self.ch {
-                '=' => token::TokenType::ASSIGN,
-                ';' => token::TokenType::SEMICOLON,
-                '(' => token::TokenType::LPAREN,
-                ')' => token::TokenType::RPAREN,
-                ',' => token::TokenType::COMMA,
-                '+' => token::TokenType::PLUS,
-                '-' => token::TokenType::MINUS,
-                '{' => token::TokenType::LBRACE,
-                '}' => token::TokenType::RBRACE,
-                '!' => token::TokenType::BANG,
-                '*' => token::TokenType::ASTERISK,
-                '<' => token::TokenType::LT,
-                '>' => token::TokenType::GT,
-                '/' => token::TokenType::SLASH,
-                '\0' => token::TokenType::EOF,
+                '=' => {
+                    if self.peek_char() == '=' {
+                        self.read_char();
+                        literal.push(self.ch);
+                        self.read_char();
+                        return Token {
+                            token_type: TokenType::EQ,
+                            literal,
+                        };
+                    }
+                    TokenType::ASSIGN
+                }
+                ';' => TokenType::SEMICOLON,
+                '(' => TokenType::LPAREN,
+                ')' => TokenType::RPAREN,
+                ',' => TokenType::COMMA,
+                '+' => TokenType::PLUS,
+                '-' => TokenType::MINUS,
+                '{' => TokenType::LBRACE,
+                '}' => TokenType::RBRACE,
+                '!' => {
+                    if self.peek_char() == '=' {
+                        self.read_char();
+                        literal.push(self.ch);
+                        self.read_char();
+                        return Token {
+                            token_type: TokenType::NOTEQ,
+                            literal,
+                        };
+                    }
+                    TokenType::BANG
+                }
+                '*' => TokenType::ASTERISK,
+                '<' => TokenType::LT,
+                '>' => TokenType::GT,
+                '/' => TokenType::SLASH,
+                '\0' => TokenType::EOF,
                 ch => {
                     let t_type: TokenType;
                     if Lexer::is_letter(ch) {
                         literal = self.read_identifier().into_iter().collect();
-                        t_type = Token::lookup_ident(&literal);
                         return Token {
-                            token_type: t_type,
+                            token_type: Token::lookup_ident(&literal),
                             literal,
                         };
                     } else if Lexer::is_digit(ch) {
                         literal = self.read_number().into_iter().collect();
-                        t_type = TokenType::INT;
                         return Token {
-                            token_type: t_type,
+                            token_type: TokenType::INT,
                             literal,
                         };
                     } else {
-                        t_type = token::TokenType::ILLEGAL
+                        t_type = TokenType::ILLEGAL
                     }
                     t_type
                 }
@@ -105,5 +125,9 @@ impl Lexer {
         }
 
         self.input[pos..self.position].into()
+    }
+
+    fn peek_char(&self) -> char {
+        *self.input.get(self.read_position).unwrap_or(&'\0')
     }
 }
