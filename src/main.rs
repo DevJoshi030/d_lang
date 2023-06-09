@@ -1,6 +1,8 @@
 pub mod lexer;
+mod repl;
 mod token;
 
 fn main() {
-    println!("Hello, world!");
+    println!("d_lang!!!");
+    repl::run();
 }
