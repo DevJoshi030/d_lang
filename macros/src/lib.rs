@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! string_from {
+macro_rules! sf {
     ($x: expr) => {
         String::from($x);
     };

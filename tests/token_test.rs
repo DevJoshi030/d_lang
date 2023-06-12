@@ -2,7 +2,7 @@ use d_lang::{
     lexer::Lexer,
     token::{Token, TokenType::*},
 };
-use macros::string_from;
+use macros::sf;
 
 #[test]
 fn test_next_token() {
@@ -18,7 +18,7 @@ fn test_next_token() {
         .zip(literals)
         .map(|(token_type, literal)| Token {
             token_type: *token_type,
-            literal: string_from!(literal),
+            literal: sf!(literal),
         })
         .collect();
 

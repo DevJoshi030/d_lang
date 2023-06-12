@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use crate::{lexer::Lexer, token::TokenType};
 
-const PROMT: &str = ">> ";
+const PROMT: &str = ">>> ";
 
 pub fn run() {
     loop {
