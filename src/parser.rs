@@ -9,6 +9,7 @@ pub struct Parser {
     l: Lexer,
     curr_token: Token,
     peek_token: Token,
+    pub errors: Vec<String>,
 }
 
 impl Parser {
@@ -23,6 +24,7 @@ impl Parser {
                 token_type: TokenType::ILLEGAL,
                 literal: sf!("\0"),
             },
+            errors: vec![],
         };
 
         p.next_token();
@@ -63,6 +65,7 @@ impl Parser {
         let mut stmt = Statement::new_let_statement();
 
         if !self.expect_peek(TokenType::IDENT) {
+            self.peek_error(TokenType::IDENT);
             return None;
         }
 
@@ -72,6 +75,7 @@ impl Parser {
         });
 
         if !self.expect_peek(TokenType::ASSIGN) {
+            self.peek_error(TokenType::ASSIGN);
             return None;
         }
 
@@ -98,5 +102,12 @@ impl Parser {
             return true;
         }
         false
+    }
+
+    fn peek_error(&mut self, token_type: TokenType) {
+        self.errors.push(format!(
+            "expected token={:#?}, got {:#?}",
+            token_type, self.peek_token
+        ));
     }
 }
