@@ -1,5 +1,5 @@
 use d_lang::{
-    ast::{LetStatement, Node, Program, Statement},
+    ast::{Node, Statement},
     lexer::Lexer,
     parser::Parser,
 };
@@ -13,15 +13,11 @@ fn test_let_statements() {
         .collect();
 
     let l = Lexer::new(input);
-    let p = Parser::new(l);
+    let mut p = Parser::new(l);
 
-    // let program  = p.parse_program();
+    let program = p.parse_program();
 
-    let program: Program<Statement> = Program { statements: vec![] };
-
-    // if program == () {
-    //     panic!("Failed to parse program!!!");
-    // }
+    println!("program: {:#?}", program.statements);
 
     if program.statements.len() > 3 {
         panic!(
@@ -34,7 +30,11 @@ fn test_let_statements() {
 
     tests.iter().enumerate().for_each(|(index, exp_ident)| {
         if !test_let_statement(
-            *program.statements.get(index).expect("No statement found!"),
+            program
+                .statements
+                .get(index)
+                .expect("No statement found!")
+                .clone(),
             exp_ident.to_string(),
         ) {
             return;
@@ -47,10 +47,8 @@ fn test_let_statement(stmt: Statement, name: String) -> bool {
         panic!("literal is not 'let', got={}", stmt.token_literal());
     }
 
-    let let_statement = LetStatement::new();
-
-    if let_statement.name.value != name {
-        panic!("name not {}, got={}", let_statement.name.value, name);
+    if stmt.get_name().value != name {
+        panic!("name not {}, got={}", stmt.get_name().value, name);
     }
 
     true

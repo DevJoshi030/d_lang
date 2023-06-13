@@ -1,5 +1,5 @@
 use crate::{
-    ast::{LetStatement, Node, Program, Statement},
+    ast::{Identifier, Program, Statement},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -35,49 +35,68 @@ impl Parser {
         self.peek_token = self.l.next_token();
     }
 
-    pub fn parse_program(&mut self) {
+    pub fn parse_program(&mut self) -> Program<Statement> {
         let mut program = Program { statements: vec![] };
 
         while self.curr_token.token_type != TokenType::EOF {
             let stmt = self.parse_statement();
 
             match stmt {
-                Some(st) => program.statements.push(st.deref()),
+                Some(st) => program.statements.push(st),
                 None => {}
             };
 
             self.next_token();
         }
+
+        program
     }
 
-    fn parse_statement<T>(&self) -> Option<T>
-    where
-        T: Node,
-    {
+    fn parse_statement(&mut self) -> Option<Statement> {
         match self.curr_token.token_type {
             TokenType::LET => self.parse_let_statement(),
             _ => None,
         }
     }
 
-    fn parse_let_statement<T>(&mut self) -> Option<T>
-    where
-        T: Node,
-    {
-        let stmt = LetStatement::new();
+    fn parse_let_statement(&mut self) -> Option<Statement> {
+        let mut stmt = Statement::new_let_statement();
 
-        // if !self.expect_peek(TokenType::IDENT) {
-        //     return None;
-        // }
+        if !self.expect_peek(TokenType::IDENT) {
+            return None;
+        }
 
-        // if !self.expect_peek(TokenType::ASSIGN) {
-        //     return None;
-        // }
+        stmt.set_name(Identifier {
+            token: stmt.get_token(),
+            value: self.curr_token.literal.clone(),
+        });
 
-        // while !self.curr_token_is(TokenType::SEMICOLON) {
-        //     self.next_token();
-        // }
+        if !self.expect_peek(TokenType::ASSIGN) {
+            return None;
+        }
+
+        // TODO: Skipping expression till semicolon
+
+        while !self.curr_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
 
         return Some(stmt);
+    }
+
+    fn curr_token_is(&self, token_type: TokenType) -> bool {
+        self.curr_token.token_type == token_type
+    }
+
+    fn peek_token_is(&self, token_type: TokenType) -> bool {
+        self.peek_token.token_type == token_type
+    }
+
+    fn expect_peek(&mut self, token_type: TokenType) -> bool {
+        if self.peek_token_is(token_type) {
+            self.next_token();
+            return true;
+        }
+        false
     }
 }

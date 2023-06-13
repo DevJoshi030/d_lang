@@ -1,27 +1,85 @@
 use macros::sf;
 
-use crate::token::Token;
+use crate::token::{Token, TokenType};
 
 pub trait Node {
     fn token_literal(&self) -> &str;
 }
 
-pub trait StatementTrait: Node {}
-#[derive(Clone, Copy)]
-pub struct Statement {}
-
-impl StatementTrait for Statement {}
+#[derive(Clone, Debug)]
+pub enum Statement {
+    LetStatement {
+        token: Token,
+        name: Identifier,
+        value: Expression,
+    },
+}
 
 impl Node for Statement {
     fn token_literal(&self) -> &str {
-        "st"
+        match self {
+            Statement::LetStatement {
+                token: _,
+                name,
+                value: _,
+            } => &name.token.literal,
+        }
     }
 }
 
-pub trait ExpressionTrait: Node {}
-pub struct Expression {}
+impl Statement {
+    pub fn new_let_statement() -> Statement {
+        Statement::LetStatement {
+            token: Token {
+                token_type: TokenType::LET,
+                literal: sf!("let"),
+            },
+            name: Identifier {
+                token: Token {
+                    token_type: TokenType::LET,
+                    literal: sf!("let"),
+                },
+                value: sf!("let"),
+            },
+            value: Expression::NoExpression,
+        }
+    }
 
-impl ExpressionTrait for Expression {}
+    pub fn get_name(&self) -> Identifier {
+        match self {
+            Statement::LetStatement {
+                token: _,
+                name,
+                value: _,
+            } => name.clone(),
+        }
+    }
+
+    pub fn get_token(&self) -> Token {
+        match self {
+            Statement::LetStatement {
+                token,
+                name: _,
+                value: _,
+            } => token.clone(),
+        }
+    }
+
+    pub fn set_name(&mut self, ident: Identifier) {
+        match self {
+            Statement::LetStatement {
+                token: _,
+                ref mut name,
+                value: _,
+            } => *name = ident,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum Expression {
+    NoExpression,
+}
 
 impl Node for Expression {
     fn token_literal(&self) -> &str {
@@ -33,7 +91,7 @@ pub struct Program<T>
 where
     T: Node,
 {
-    pub statements: Vec<Box<T>>,
+    pub statements: Vec<T>,
 }
 
 impl<T> Node for Program<T>
@@ -49,48 +107,14 @@ where
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,
 }
 
-impl ExpressionTrait for Identifier {}
-
 impl Node for Identifier {
     fn token_literal(&self) -> &str {
         &self.value
-    }
-}
-
-pub struct LetStatement {
-    pub token: Token,
-    pub name: Identifier,
-    pub value: Expression,
-}
-
-impl LetStatement {
-    pub fn new() -> LetStatement {
-        LetStatement {
-            token: Token {
-                token_type: crate::token::TokenType::LET,
-                literal: sf!("let"),
-            },
-            name: Identifier {
-                token: Token {
-                    token_type: crate::token::TokenType::LET,
-                    literal: sf!("let"),
-                },
-                value: sf!("let"),
-            },
-            value: Expression {},
-        }
-    }
-}
-
-impl StatementTrait for LetStatement {}
-
-impl Node for LetStatement {
-    fn token_literal(&self) -> &str {
-        &self.value.token_literal()
     }
 }
