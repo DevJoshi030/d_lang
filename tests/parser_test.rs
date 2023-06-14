@@ -16,7 +16,9 @@ fn test_let_statements() {
     let mut p = Parser::new(l);
 
     let program = p.parse_program();
-    check_parse_errors(p);
+    p.check_parse_errors();
+
+    println!("statements: {:#?}", program.statements);
 
     if program.statements.len() > 3 {
         panic!(
@@ -51,16 +53,4 @@ fn test_let_statement(stmt: Statement, name: String) -> bool {
     }
 
     true
-}
-
-fn check_parse_errors(p: Parser) {
-    if p.errors.len() == 0 {
-        return;
-    }
-
-    for err in p.errors {
-        println!("{}", err);
-    }
-
-    panic!("error reported in parsing!!!");
 }

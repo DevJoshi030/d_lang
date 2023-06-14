@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::{lexer::Lexer, token::TokenType};
+use crate::{lexer::Lexer, parser::Parser, token::TokenType};
 
 const PROMT: &str = ">>> ";
 
@@ -14,14 +14,13 @@ pub fn run() {
             .expect("Failed to parse input!");
 
         let mut l = Lexer::new(input.chars().collect());
+        let mut p = Parser::new(l);
 
-        loop {
-            let l = l.next_token();
-            if l.token_type == TokenType::EOF {
-                break;
-            } else {
-                println!("(Type:{:#?}, Literal: {})", l.token_type, l.literal);
-            }
+        let program = p.parse_program();
+        p.check_parse_errors();
+
+        for statement in program.statements {
+            println!("{:#?}", statement);
         }
     }
 }

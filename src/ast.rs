@@ -19,10 +19,10 @@ impl Node for Statement {
     fn token_literal(&self) -> &str {
         match self {
             Statement::LetStatement {
-                token: _,
-                name,
+                token,
+                name: _,
                 value: _,
-            } => &name.token.literal,
+            } => &token.literal,
         }
     }
 }

@@ -70,7 +70,7 @@ impl Parser {
         }
 
         stmt.set_name(Identifier {
-            token: stmt.get_token(),
+            token: self.curr_token.clone(),
             value: self.curr_token.literal.clone(),
         });
 
@@ -109,5 +109,17 @@ impl Parser {
             "expected token={:#?}, got {:#?}",
             token_type, self.peek_token
         ));
+    }
+
+    pub fn check_parse_errors(&self) {
+        if self.errors.len() == 0 {
+            return;
+        }
+
+        for err in self.errors.iter() {
+            println!("{}", err);
+        }
+
+        panic!("error reported in parsing!!!");
     }
 }
