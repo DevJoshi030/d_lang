@@ -57,19 +57,20 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.curr_token.token_type {
             TokenType::LET => self.parse_let_statement(),
+            TokenType::RETURN => self.parse_return_statement(),
             _ => None,
         }
     }
 
     fn parse_let_statement(&mut self) -> Option<Statement> {
-        let mut stmt = Statement::new_let_statement();
+        let mut stmt = Statement::new(TokenType::LET);
 
         if !self.expect_peek(TokenType::IDENT) {
             self.peek_error(TokenType::IDENT);
             return None;
         }
 
-        stmt.set_name(Identifier {
+        stmt.set_let_name(Identifier {
             token: self.curr_token.clone(),
             value: self.curr_token.literal.clone(),
         });
@@ -78,6 +79,20 @@ impl Parser {
             self.peek_error(TokenType::ASSIGN);
             return None;
         }
+
+        // TODO: Skipping expression till semicolon
+
+        while !self.curr_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        return Some(stmt);
+    }
+
+    fn parse_return_statement(&mut self) -> Option<Statement> {
+        let stmt = Statement::new(TokenType::RETURN);
+
+        self.next_token();
 
         // TODO: Skipping expression till semicolon
 

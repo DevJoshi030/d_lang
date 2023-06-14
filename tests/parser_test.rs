@@ -18,8 +18,6 @@ fn test_let_statements() {
     let program = p.parse_program();
     p.check_parse_errors();
 
-    println!("statements: {:#?}", program.statements);
-
     if program.statements.len() > 3 {
         panic!(
             "program.statements does not contain 3 statements. got {}",
@@ -48,9 +46,48 @@ fn test_let_statement(stmt: Statement, name: String) -> bool {
         panic!("literal is not 'let', got={}", stmt.token_literal());
     }
 
-    if stmt.get_name().value != name {
-        panic!("name not {}, got={}", stmt.get_name().value, name);
+    let stmt_name = match stmt {
+        Statement::LetStatement {
+            token: _,
+            name,
+            value: _,
+        } => name.clone(),
+        _ => panic!("Statement is not LET"),
+    };
+
+    if stmt_name.value != name {
+        panic!("name not {}, got={}", stmt_name.value, name);
     }
 
     true
+}
+
+#[test]
+fn test_return_statements() {
+    let input: Vec<char> = "return 5;
+    return 10;
+    return 993322;"
+        .chars()
+        .collect();
+
+    let l = Lexer::new(input);
+    let mut p = Parser::new(l);
+
+    let program = p.parse_program();
+    p.check_parse_errors();
+
+    println!("statements: {:#?}", program.statements);
+
+    if program.statements.len() > 3 {
+        panic!(
+            "program.statements does not contain 3 statements. got {}",
+            program.statements.len()
+        );
+    }
+
+    for stmt in program.statements.iter() {
+        if stmt.token_literal() != "return" {
+            panic!("literal is not 'return', got={}", stmt.token_literal());
+        }
+    }
 }

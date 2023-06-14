@@ -13,6 +13,11 @@ pub enum Statement {
         name: Identifier,
         value: Expression,
     },
+    ReturnStatement {
+        token: Token,
+        value: Expression,
+    },
+    IllegalStatement,
 }
 
 impl Node for Statement {
@@ -23,55 +28,48 @@ impl Node for Statement {
                 name: _,
                 value: _,
             } => &token.literal,
+            Statement::ReturnStatement { token, value: _ } => &token.literal,
+            _ => "\0",
         }
     }
 }
 
 impl Statement {
-    pub fn new_let_statement() -> Statement {
-        Statement::LetStatement {
-            token: Token {
-                token_type: TokenType::LET,
-                literal: sf!("let"),
-            },
-            name: Identifier {
+    pub fn new(token_type: TokenType) -> Statement {
+        match token_type {
+            TokenType::LET => Statement::LetStatement {
                 token: Token {
                     token_type: TokenType::LET,
                     literal: sf!("let"),
                 },
-                value: sf!("let"),
+                name: Identifier {
+                    token: Token {
+                        token_type: TokenType::LET,
+                        literal: sf!("let"),
+                    },
+                    value: sf!("let"),
+                },
+                value: Expression::NoExpression,
             },
-            value: Expression::NoExpression,
+            TokenType::RETURN => Statement::ReturnStatement {
+                token: Token {
+                    token_type: TokenType::RETURN,
+                    literal: sf!("return"),
+                },
+                value: Expression::NoExpression,
+            },
+            _ => Statement::IllegalStatement,
         }
     }
 
-    pub fn get_name(&self) -> Identifier {
-        match self {
-            Statement::LetStatement {
-                token: _,
-                name,
-                value: _,
-            } => name.clone(),
-        }
-    }
-
-    pub fn get_token(&self) -> Token {
-        match self {
-            Statement::LetStatement {
-                token,
-                name: _,
-                value: _,
-            } => token.clone(),
-        }
-    }
-
-    pub fn set_name(&mut self, ident: Identifier) {
+    pub fn set_let_name(&mut self, ident: Identifier) {
         match self {
             Statement::LetStatement {
                 token: _,
                 ref mut name,
                 value: _,
             } => *name = ident,
+            _ => (),
         }
     }
 }
