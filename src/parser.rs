@@ -1,15 +1,31 @@
+use std::{collections::HashMap, ops::Deref};
+
 use crate::{
-    ast::{Identifier, Program, Statement},
+    ast::{Expression, Identifier, Program, Statement},
     lexer::Lexer,
     token::{Token, TokenType},
 };
 use macros::sf;
+
+enum Precedence {
+    BLANK,
+    LOWEST,
+    EQUALS,
+    LESSGREATER,
+    SUM,
+    PRODUCT,
+    PREFIX,
+    CALL,
+}
 
 pub struct Parser {
     l: Lexer,
     curr_token: Token,
     peek_token: Token,
     pub errors: Vec<String>,
+
+    prefix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a Parser) -> Expression>>,
+    infix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a Parser) -> Expression>>,
 }
 
 impl Parser {
@@ -25,7 +41,11 @@ impl Parser {
                 literal: sf!("\0"),
             },
             errors: vec![],
+            prefix_parse_fns: HashMap::new(),
+            infix_parse_fns: HashMap::new(),
         };
+
+        p.register_prefix(TokenType::IDENT, Parser::parse_identifier);
 
         p.next_token();
         p.next_token();
@@ -58,7 +78,7 @@ impl Parser {
         match self.curr_token.token_type {
             TokenType::LET => self.parse_let_statement(),
             TokenType::RETURN => self.parse_return_statement(),
-            _ => None,
+            _ => self.parse_expression_statement(),
         }
     }
 
@@ -136,5 +156,52 @@ impl Parser {
         }
 
         panic!("error reported in parsing!!!");
+    }
+
+    fn parse_expression_statement(&mut self) -> Option<Statement> {
+        let mut stmt = Statement::new(self.curr_token.token_type);
+
+        stmt.set_expression(self.parse_expression(Precedence::LOWEST));
+        stmt.set_expression_literal();
+
+        if self.peek_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        Some(stmt)
+    }
+
+    fn parse_expression(&mut self, prec: Precedence) -> Expression {
+        let prefix_option = self.prefix_parse_fns.get(&self.curr_token.token_type);
+
+        let prefix = match prefix_option {
+            Some(prefix) => prefix,
+            None => return Expression { value: sf!("\0") },
+        }
+        .deref();
+
+        prefix(&self)
+    }
+
+    fn parse_identifier(&self) -> Expression {
+        Expression {
+            value: self.curr_token.literal.clone(),
+        }
+    }
+
+    fn register_prefix(
+        &mut self,
+        token_type: TokenType,
+        func: for<'a> fn(&'a Parser) -> Expression,
+    ) {
+        self.prefix_parse_fns.insert(token_type, Box::new(func));
+    }
+
+    fn register_infix(
+        &mut self,
+        token_type: TokenType,
+        func: for<'a> fn(&'a Parser) -> Expression,
+    ) {
+        self.infix_parse_fns.insert(token_type, Box::new(func));
     }
 }

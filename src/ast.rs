@@ -22,7 +22,6 @@ pub enum Statement {
         token: Token,
         expression: Expression,
     },
-    IllegalStatement,
 }
 
 impl Node for Statement {
@@ -52,7 +51,6 @@ impl Node for Statement {
             } => {
                 format!("{}", expression.to_string())
             }
-            _ => sf!("\0"),
         }
     }
 }
@@ -81,7 +79,13 @@ impl Statement {
                 },
                 value: Expression { value: sf!("\0") },
             },
-            _ => Statement::IllegalStatement,
+            token_type => Statement::ExpressionStatement {
+                token: Token {
+                    token_type: token_type,
+                    literal: sf!("\0"),
+                },
+                expression: Expression { value: sf!("\0") },
+            },
         }
     }
 
@@ -92,6 +96,26 @@ impl Statement {
                 ref mut name,
                 value: _,
             } => *name = ident,
+            _ => (),
+        }
+    }
+
+    pub fn set_expression(&mut self, expr: Expression) {
+        match self {
+            Statement::ExpressionStatement {
+                token: _,
+                ref mut expression,
+            } => *expression = expr,
+            _ => (),
+        }
+    }
+
+    pub fn set_expression_literal(&mut self) {
+        match self {
+            Statement::ExpressionStatement {
+                ref mut token,
+                expression,
+            } => token.literal = expression.value.clone(),
             _ => (),
         }
     }

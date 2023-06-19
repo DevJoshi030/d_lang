@@ -76,8 +76,6 @@ fn test_return_statements() {
     let program = p.parse_program();
     p.check_parse_errors();
 
-    println!("statements: {:#?}", program.statements);
-
     if program.statements.len() > 3 {
         panic!(
             "program.statements does not contain 3 statements. got {}",
@@ -89,5 +87,37 @@ fn test_return_statements() {
         if stmt.token_literal() != "return" {
             panic!("literal is not 'return', got={}", stmt.token_literal());
         }
+    }
+}
+
+#[test]
+fn test_identifier_expression() {
+    let input: Vec<char> = "foobar;".chars().collect();
+
+    let l = Lexer::new(input);
+    let mut p = Parser::new(l);
+
+    let program = p.parse_program();
+    p.check_parse_errors();
+
+    if program.statements.len() != 1 {
+        panic!(
+            "program.statements does not have enough statements. got {}",
+            program.statements.len()
+        );
+    }
+
+    let stmt = program.statements.get(0).unwrap();
+
+    let expr = match stmt {
+        Statement::ExpressionStatement {
+            token: _,
+            expression,
+        } => expression.clone(),
+        _ => panic!("Statement is not EXPRESSION"),
+    };
+
+    if expr.to_string() != "foobar" {
+        panic!("expr is not foobar, got={}", expr.to_string());
     }
 }
