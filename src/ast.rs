@@ -4,6 +4,7 @@ use crate::token::{Token, TokenType};
 
 pub trait Node {
     fn token_literal(&self) -> &str;
+    fn to_string(&self) -> String;
 }
 
 #[derive(Clone, Debug)]
@@ -11,11 +12,15 @@ pub enum Statement {
     LetStatement {
         token: Token,
         name: Identifier,
-        value: Expression,
+        value: Identifier,
     },
     ReturnStatement {
         token: Token,
-        value: Expression,
+        value: Identifier,
+    },
+    ExpressionStatement {
+        token: Token,
+        expression: Identifier,
     },
     IllegalStatement,
 }
@@ -30,6 +35,24 @@ impl Node for Statement {
             } => &token.literal,
             Statement::ReturnStatement { token, value: _ } => &token.literal,
             _ => "\0",
+        }
+    }
+
+    fn to_string(&self) -> String {
+        match self {
+            Statement::LetStatement { token, name, value } => {
+                format!("{} {} = {};", token.literal, name.value, value.to_string())
+            }
+            Statement::ReturnStatement { token, value } => {
+                format!("{} {:#?};", token.literal, value.to_string())
+            }
+            Statement::ExpressionStatement {
+                token: _,
+                expression,
+            } => {
+                format!("{}", expression.to_string())
+            }
+            _ => sf!("\0"),
         }
     }
 }
@@ -49,14 +72,26 @@ impl Statement {
                     },
                     value: sf!("let"),
                 },
-                value: Expression::NoExpression,
+                value: Identifier {
+                    token: Token {
+                        token_type: TokenType::ILLEGAL,
+                        literal: sf!("\0"),
+                    },
+                    value: sf!("\0"),
+                },
             },
             TokenType::RETURN => Statement::ReturnStatement {
                 token: Token {
                     token_type: TokenType::RETURN,
                     literal: sf!("return"),
                 },
-                value: Expression::NoExpression,
+                value: Identifier {
+                    token: Token {
+                        token_type: TokenType::ILLEGAL,
+                        literal: sf!("\0"),
+                    },
+                    value: sf!("\0"),
+                },
             },
             _ => Statement::IllegalStatement,
         }
@@ -74,35 +109,8 @@ impl Statement {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum Expression {
-    NoExpression,
-}
-
-impl Node for Expression {
-    fn token_literal(&self) -> &str {
-        "ex"
-    }
-}
-
-pub struct Program<T>
-where
-    T: Node,
-{
-    pub statements: Vec<T>,
-}
-
-impl<T> Node for Program<T>
-where
-    T: Node,
-{
-    fn token_literal(&self) -> &str {
-        if self.statements.len() > 0 {
-            self.statements.get(0).unwrap().token_literal()
-        } else {
-            ""
-        }
-    }
+pub struct Program<Statement> {
+    pub statements: Vec<Statement>,
 }
 
 #[derive(Clone, Debug)]
@@ -114,5 +122,9 @@ pub struct Identifier {
 impl Node for Identifier {
     fn token_literal(&self) -> &str {
         &self.value
+    }
+
+    fn to_string(&self) -> String {
+        self.value.clone()
     }
 }
