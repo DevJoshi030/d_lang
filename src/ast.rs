@@ -12,15 +12,15 @@ pub enum Statement {
     LetStatement {
         token: Token,
         name: Identifier,
-        value: Identifier,
+        value: Expression,
     },
     ReturnStatement {
         token: Token,
-        value: Identifier,
+        value: Expression,
     },
     ExpressionStatement {
         token: Token,
-        expression: Identifier,
+        expression: Expression,
     },
     IllegalStatement,
 }
@@ -72,26 +72,14 @@ impl Statement {
                     },
                     value: sf!("let"),
                 },
-                value: Identifier {
-                    token: Token {
-                        token_type: TokenType::ILLEGAL,
-                        literal: sf!("\0"),
-                    },
-                    value: sf!("\0"),
-                },
+                value: Expression { value: sf!("\0") },
             },
             TokenType::RETURN => Statement::ReturnStatement {
                 token: Token {
                     token_type: TokenType::RETURN,
                     literal: sf!("return"),
                 },
-                value: Identifier {
-                    token: Token {
-                        token_type: TokenType::ILLEGAL,
-                        literal: sf!("\0"),
-                    },
-                    value: sf!("\0"),
-                },
+                value: Expression { value: sf!("\0") },
             },
             _ => Statement::IllegalStatement,
         }
@@ -120,6 +108,21 @@ pub struct Identifier {
 }
 
 impl Node for Identifier {
+    fn token_literal(&self) -> &str {
+        &self.value
+    }
+
+    fn to_string(&self) -> String {
+        self.value.clone()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Expression {
+    pub value: String,
+}
+
+impl Node for Expression {
     fn token_literal(&self) -> &str {
         &self.value
     }
