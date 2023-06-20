@@ -1,7 +1,7 @@
 use std::{collections::HashMap, ops::Deref};
 
 use crate::{
-    ast::{Expression, Identifier, Program, Statement},
+    ast::{Expression, Program, Statement},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -46,6 +46,7 @@ impl Parser {
         };
 
         p.register_prefix(TokenType::IDENT, Parser::parse_identifier);
+        p.register_prefix(TokenType::INT, Parser::parse_integer_literal);
 
         p.next_token();
         p.next_token();
@@ -90,7 +91,7 @@ impl Parser {
             return None;
         }
 
-        stmt.set_let_name(Identifier {
+        stmt.set_let_name(Expression::Identifier {
             token: self.curr_token.clone(),
             value: self.curr_token.literal.clone(),
         });
@@ -176,7 +177,7 @@ impl Parser {
 
         let prefix = match prefix_option {
             Some(prefix) => prefix,
-            None => return Expression { value: sf!("\0") },
+            None => return Expression::NoExpression,
         }
         .deref();
 
@@ -184,8 +185,25 @@ impl Parser {
     }
 
     fn parse_identifier(&self) -> Expression {
-        Expression {
+        Expression::Identifier {
+            token: Token {
+                token_type: TokenType::IDENT,
+                literal: self.curr_token.literal.clone(),
+            },
             value: self.curr_token.literal.clone(),
+        }
+    }
+
+    fn parse_integer_literal(&self) -> Expression {
+        Expression::IntegerLiteral {
+            token: Token {
+                token_type: TokenType::INT,
+                literal: self.curr_token.literal.clone(),
+            },
+            value: self.curr_token.literal.clone().parse().expect(&format!(
+                "Failed to parse int, got={}",
+                self.curr_token.literal.clone(),
+            )),
         }
     }
 

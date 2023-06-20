@@ -8,10 +8,35 @@ pub trait Node {
 }
 
 #[derive(Clone, Debug)]
+pub enum Expression {
+    Identifier { token: Token, value: String },
+    IntegerLiteral { token: Token, value: i32 },
+    NoExpression,
+}
+
+impl Node for Expression {
+    fn token_literal(&self) -> &str {
+        match self {
+            Expression::Identifier { token, value: _ } => &token.literal,
+            Expression::IntegerLiteral { token, value: _ } => &token.literal,
+            Expression::NoExpression => "\0",
+        }
+    }
+
+    fn to_string(&self) -> String {
+        match self {
+            Expression::Identifier { token: _, value } => value.clone(),
+            Expression::IntegerLiteral { token: _, value } => value.to_string(),
+            Expression::NoExpression => sf!("\0"),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum Statement {
     LetStatement {
         token: Token,
-        name: Identifier,
+        name: Expression,
         value: Expression,
     },
     ReturnStatement {
@@ -40,7 +65,12 @@ impl Node for Statement {
     fn to_string(&self) -> String {
         match self {
             Statement::LetStatement { token, name, value } => {
-                format!("{} {} = {};", token.literal, name.value, value.to_string())
+                format!(
+                    "{} {} = {};",
+                    token.literal,
+                    name.token_literal(),
+                    value.to_string()
+                )
             }
             Statement::ReturnStatement { token, value } => {
                 format!("{} {:#?};", token.literal, value.to_string())
@@ -63,33 +93,33 @@ impl Statement {
                     token_type: TokenType::LET,
                     literal: sf!("let"),
                 },
-                name: Identifier {
+                name: Expression::Identifier {
                     token: Token {
                         token_type: TokenType::LET,
                         literal: sf!("let"),
                     },
                     value: sf!("let"),
                 },
-                value: Expression { value: sf!("\0") },
+                value: Expression::NoExpression,
             },
             TokenType::RETURN => Statement::ReturnStatement {
                 token: Token {
                     token_type: TokenType::RETURN,
                     literal: sf!("return"),
                 },
-                value: Expression { value: sf!("\0") },
+                value: Expression::NoExpression,
             },
             token_type => Statement::ExpressionStatement {
                 token: Token {
                     token_type: token_type,
                     literal: sf!("\0"),
                 },
-                expression: Expression { value: sf!("\0") },
+                expression: Expression::NoExpression,
             },
         }
     }
 
-    pub fn set_let_name(&mut self, ident: Identifier) {
+    pub fn set_let_name(&mut self, ident: Expression) {
         match self {
             Statement::LetStatement {
                 token: _,
@@ -115,7 +145,7 @@ impl Statement {
             Statement::ExpressionStatement {
                 ref mut token,
                 expression,
-            } => token.literal = expression.value.clone(),
+            } => token.literal = sf!(expression.token_literal()),
             _ => (),
         }
     }
@@ -123,35 +153,4 @@ impl Statement {
 
 pub struct Program<Statement> {
     pub statements: Vec<Statement>,
-}
-
-#[derive(Clone, Debug)]
-pub struct Identifier {
-    pub token: Token,
-    pub value: String,
-}
-
-impl Node for Identifier {
-    fn token_literal(&self) -> &str {
-        &self.value
-    }
-
-    fn to_string(&self) -> String {
-        self.value.clone()
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Expression {
-    pub value: String,
-}
-
-impl Node for Expression {
-    fn token_literal(&self) -> &str {
-        &self.value
-    }
-
-    fn to_string(&self) -> String {
-        self.value.clone()
-    }
 }

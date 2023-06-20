@@ -55,8 +55,8 @@ fn test_let_statement(stmt: Statement, name: String) -> bool {
         _ => panic!("Statement is not LET"),
     };
 
-    if stmt_name.value != name {
-        panic!("name not {}, got={}", stmt_name.value, name);
+    if stmt_name.to_string() != name {
+        panic!("name not {}, got={}", stmt_name.to_string(), name);
     }
 
     true
@@ -119,5 +119,37 @@ fn test_identifier_expression() {
 
     if expr.to_string() != "foobar" {
         panic!("expr is not foobar, got={}", expr.to_string());
+    }
+}
+
+#[test]
+fn test_integer_literal_expression() {
+    let input: Vec<char> = "5;".chars().collect();
+
+    let l = Lexer::new(input);
+    let mut p = Parser::new(l);
+
+    let program = p.parse_program();
+    p.check_parse_errors();
+
+    if program.statements.len() != 1 {
+        panic!(
+            "program.statements does not have enough statements. got {}",
+            program.statements.len()
+        );
+    }
+
+    let stmt = program.statements.get(0).unwrap();
+
+    let expr = match stmt {
+        Statement::ExpressionStatement {
+            token: _,
+            expression,
+        } => expression.clone(),
+        _ => panic!("Statement is not EXPRESSION"),
+    };
+
+    if expr.to_string() != "5" {
+        panic!("expr is not 5, got={}", expr.to_string());
     }
 }

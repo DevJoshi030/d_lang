@@ -1,5 +1,5 @@
 use d_lang::{
-    ast::{Expression, Identifier, Node, Program, Statement},
+    ast::{Expression, Node, Program, Statement},
     token::{Token, TokenType},
 };
 use macros::sf;
@@ -13,14 +13,18 @@ fn test_string() {
                 token_type: TokenType::LET,
                 literal: sf!("let"),
             },
-            name: Identifier {
+            name: Expression::Identifier {
                 token: Token {
                     token_type: TokenType::IDENT,
                     literal: sf!("my_var"),
                 },
                 value: sf!("my_var"),
             },
-            value: Expression {
+            value: Expression::Identifier {
+                token: Token {
+                    token_type: TokenType::IDENT,
+                    literal: sf!("another_var"),
+                },
                 value: sf!("another_var"),
             },
         }],
