@@ -222,10 +222,19 @@ fn test_integer_literal(expr: Expression, val: i32) -> bool {
         panic!("value is not {}, got={}", val, right);
     }
 
-    if expr.token_literal() != val.to_string() {
+    let oper = match expr {
+        Expression::Prefix {
+            token: _,
+            ref operator,
+            right: _,
+        } => operator.clone(),
+        _ => sf!("\0"),
+    };
+
+    if expr.token_literal() != oper {
         panic!(
             "token literal is not {}, got={}",
-            val.to_string(),
+            oper,
             expr.token_literal()
         );
     }

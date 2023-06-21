@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
 use crate::{
     ast::{Expression, Program, Statement},
@@ -24,8 +24,8 @@ pub struct Parser {
     peek_token: Token,
     pub errors: Vec<String>,
 
-    prefix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a mut Parser) -> Expression>>,
-    infix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a mut Parser) -> Expression>>,
+    prefix_parse_fns: HashMap<TokenType, for<'a> fn(&'a mut Parser) -> Expression>,
+    infix_parse_fns: HashMap<TokenType, for<'a> fn(&'a mut Parser) -> Expression>,
 }
 
 impl Parser {
@@ -188,8 +188,7 @@ impl Parser {
                 self.no_prefix_parse_fn_error(self.curr_token.token_type);
                 return Expression::NoExpression;
             }
-        }
-        .deref();
+        };
 
         prefix(self)
     }
@@ -222,15 +221,15 @@ impl Parser {
             token: self.curr_token.clone(),
             operator: self.curr_token.literal.clone(),
             right: {
-                self.get_next_token();
-                self.parse_expression(Precedence::PREFIX);
-                -1
+                self.next_token();
+                let expr = self.parse_expression(Precedence::PREFIX);
+                match expr {
+                    Expression::Identifier { token: _, value } => value.parse().unwrap(),
+                    Expression::IntegerLiteral { token: _, value } => value,
+                    _ => -1,
+                }
             },
         }
-    }
-
-    fn get_next_token(&mut self) {
-        self.next_token();
     }
 
     fn register_prefix(
@@ -238,7 +237,7 @@ impl Parser {
         token_type: TokenType,
         func: for<'a> fn(&'a mut Parser) -> Expression,
     ) {
-        self.prefix_parse_fns.insert(token_type, Box::new(func));
+        self.prefix_parse_fns.insert(token_type, func);
     }
 
     fn register_infix(
@@ -246,6 +245,6 @@ impl Parser {
         token_type: TokenType,
         func: for<'a> fn(&'a mut Parser) -> Expression,
     ) {
-        self.infix_parse_fns.insert(token_type, Box::new(func));
+        self.infix_parse_fns.insert(token_type, func);
     }
 }
