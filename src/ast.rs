@@ -9,8 +9,19 @@ pub trait Node {
 
 #[derive(Clone, Debug)]
 pub enum Expression {
-    Identifier { token: Token, value: String },
-    IntegerLiteral { token: Token, value: i32 },
+    Identifier {
+        token: Token,
+        value: String,
+    },
+    IntegerLiteral {
+        token: Token,
+        value: i32,
+    },
+    Prefix {
+        token: Token,
+        operator: String,
+        right: i32,
+    },
     NoExpression,
 }
 
@@ -19,6 +30,11 @@ impl Node for Expression {
         match self {
             Expression::Identifier { token, value: _ } => &token.literal,
             Expression::IntegerLiteral { token, value: _ } => &token.literal,
+            Expression::Prefix {
+                token,
+                operator: _,
+                right: _,
+            } => &token.literal,
             Expression::NoExpression => "\0",
         }
     }
@@ -27,6 +43,11 @@ impl Node for Expression {
         match self {
             Expression::Identifier { token: _, value } => value.clone(),
             Expression::IntegerLiteral { token: _, value } => value.to_string(),
+            Expression::Prefix {
+                token: _,
+                operator,
+                right,
+            } => sf!(format!("({}{})", operator, right.to_string())),
             Expression::NoExpression => sf!("\0"),
         }
     }

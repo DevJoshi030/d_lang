@@ -24,8 +24,8 @@ pub struct Parser {
     peek_token: Token,
     pub errors: Vec<String>,
 
-    prefix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a Parser) -> Expression>>,
-    infix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a Parser) -> Expression>>,
+    prefix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a mut Parser) -> Expression>>,
+    infix_parse_fns: HashMap<TokenType, Box<dyn for<'a> Fn(&'a mut Parser) -> Expression>>,
 }
 
 impl Parser {
@@ -47,6 +47,8 @@ impl Parser {
 
         p.register_prefix(TokenType::IDENT, Parser::parse_identifier);
         p.register_prefix(TokenType::INT, Parser::parse_integer_literal);
+        p.register_prefix(TokenType::BANG, Parser::parse_prefix_expression);
+        p.register_prefix(TokenType::MINUS, Parser::parse_prefix_expression);
 
         p.next_token();
         p.next_token();
@@ -147,6 +149,11 @@ impl Parser {
         ));
     }
 
+    fn no_prefix_parse_fn_error(&mut self, token_type: TokenType) {
+        self.errors
+            .push(format!("no prefix parse fn for {:#?} found", token_type));
+    }
+
     pub fn check_parse_errors(&self) {
         if self.errors.len() == 0 {
             return;
@@ -177,14 +184,17 @@ impl Parser {
 
         let prefix = match prefix_option {
             Some(prefix) => prefix,
-            None => return Expression::NoExpression,
+            None => {
+                self.no_prefix_parse_fn_error(self.curr_token.token_type);
+                return Expression::NoExpression;
+            }
         }
         .deref();
 
-        prefix(&self)
+        prefix(self)
     }
 
-    fn parse_identifier(&self) -> Expression {
+    fn parse_identifier(&mut self) -> Expression {
         Expression::Identifier {
             token: Token {
                 token_type: TokenType::IDENT,
@@ -194,7 +204,7 @@ impl Parser {
         }
     }
 
-    fn parse_integer_literal(&self) -> Expression {
+    fn parse_integer_literal(&mut self) -> Expression {
         Expression::IntegerLiteral {
             token: Token {
                 token_type: TokenType::INT,
@@ -207,10 +217,26 @@ impl Parser {
         }
     }
 
+    fn parse_prefix_expression(&mut self) -> Expression {
+        Expression::Prefix {
+            token: self.curr_token.clone(),
+            operator: self.curr_token.literal.clone(),
+            right: {
+                self.get_next_token();
+                self.parse_expression(Precedence::PREFIX);
+                -1
+            },
+        }
+    }
+
+    fn get_next_token(&mut self) {
+        self.next_token();
+    }
+
     fn register_prefix(
         &mut self,
         token_type: TokenType,
-        func: for<'a> fn(&'a Parser) -> Expression,
+        func: for<'a> fn(&'a mut Parser) -> Expression,
     ) {
         self.prefix_parse_fns.insert(token_type, Box::new(func));
     }
@@ -218,7 +244,7 @@ impl Parser {
     fn register_infix(
         &mut self,
         token_type: TokenType,
-        func: for<'a> fn(&'a Parser) -> Expression,
+        func: for<'a> fn(&'a mut Parser) -> Expression,
     ) {
         self.infix_parse_fns.insert(token_type, Box::new(func));
     }
