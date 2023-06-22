@@ -13,6 +13,7 @@ use crate::{
 };
 use macros::sf;
 
+#[derive(Debug)]
 pub struct Parser {
     l: Lexer,
     curr_token: Token,
@@ -20,7 +21,7 @@ pub struct Parser {
     pub errors: Vec<String>,
 
     prefix_parse_fns: HashMap<TokenType, for<'a> fn(&'a mut Parser) -> Expression>,
-    infix_parse_fns: HashMap<TokenType, for<'a> fn(&'a mut Parser) -> Expression>,
+    infix_parse_fns: HashMap<TokenType, for<'a> fn(&'a mut Parser, &Expression) -> Expression>,
 }
 
 impl Parser {
@@ -44,6 +45,15 @@ impl Parser {
         p.register_prefix(TokenType::INT, Parser::parse_integer_literal);
         p.register_prefix(TokenType::BANG, Parser::parse_prefix_expression);
         p.register_prefix(TokenType::MINUS, Parser::parse_prefix_expression);
+
+        p.register_infix(TokenType::PLUS, Parser::parse_infix_expression);
+        p.register_infix(TokenType::MINUS, Parser::parse_infix_expression);
+        p.register_infix(TokenType::SLASH, Parser::parse_infix_expression);
+        p.register_infix(TokenType::ASTERISK, Parser::parse_infix_expression);
+        p.register_infix(TokenType::EQ, Parser::parse_infix_expression);
+        p.register_infix(TokenType::NOTEQ, Parser::parse_infix_expression);
+        p.register_infix(TokenType::LT, Parser::parse_infix_expression);
+        p.register_infix(TokenType::GT, Parser::parse_infix_expression);
 
         p.next_token();
         p.next_token();
@@ -91,7 +101,7 @@ impl Parser {
     fn register_infix(
         &mut self,
         token_type: TokenType,
-        func: for<'a> fn(&'a mut Parser) -> Expression,
+        func: for<'a> fn(&'a mut Parser, &Expression) -> Expression,
     ) {
         self.infix_parse_fns.insert(token_type, func);
     }

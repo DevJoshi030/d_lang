@@ -30,7 +30,22 @@ impl Parser {
             }
         };
 
-        prefix(self)
+        let left = prefix(self);
+
+        while !self.peek_token_is(TokenType::SEMICOLON) && prec < self.peek_precedence() {
+            let infix_option = self.infix_parse_fns.get(&self.peek_token.token_type);
+
+            let infix = match infix_option {
+                Some(infix) => infix,
+                None => {
+                    return left;
+                }
+            };
+
+            return infix(self, &left);
+        }
+
+        left
     }
 
     pub fn parse_prefix_expression(&mut self) -> Expression {
@@ -40,6 +55,30 @@ impl Parser {
             right: {
                 self.next_token();
                 let expr = self.parse_expression(Precedence::PREFIX);
+                match expr {
+                    Expression::Identifier { token: _, value } => value.parse().unwrap(),
+                    Expression::IntegerLiteral { token: _, value } => value,
+                    _ => -1,
+                }
+            },
+        }
+    }
+
+    pub fn parse_infix_expression(&mut self, left_expr: &Expression) -> Expression {
+        Expression::Infix {
+            token: self.curr_token.clone(),
+            left: {
+                match left_expr {
+                    Expression::Identifier { token: _, value } => value.parse().unwrap(),
+                    Expression::IntegerLiteral { token: _, value } => *value,
+                    _ => -1,
+                }
+            },
+            operator: self.curr_token.literal.clone(),
+            right: {
+                let prec = self.curr_precedence();
+                self.next_token();
+                let expr = self.parse_expression(prec);
                 match expr {
                     Expression::Identifier { token: _, value } => value.parse().unwrap(),
                     Expression::IntegerLiteral { token: _, value } => value,

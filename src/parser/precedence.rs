@@ -1,5 +1,6 @@
 use crate::token::TokenType;
 
+#[derive(PartialEq, PartialOrd)]
 pub enum Precedence {
     BLANK,
     LOWEST,
