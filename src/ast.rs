@@ -31,6 +31,27 @@ pub enum Expression {
     NoExpression,
 }
 
+impl Expression {
+    fn get_token(&self) -> TokenType {
+        match self {
+            Expression::Identifier { token, value: _ } => token.token_type,
+            Expression::IntegerLiteral { token, value: _ } => token.token_type,
+            Expression::Prefix {
+                token,
+                operator: _,
+                right: _,
+            } => token.token_type,
+            Expression::Infix {
+                token,
+                left: _,
+                operator: _,
+                right: _,
+            } => token.token_type,
+            Expression::NoExpression => TokenType::ILLEGAL,
+        }
+    }
+}
+
 impl Node for Expression {
     fn token_literal(&self) -> &str {
         match self {
@@ -177,9 +198,12 @@ impl Statement {
     pub fn set_expression(&mut self, expr: Expression) {
         match self {
             Statement::ExpressionStatement {
-                token: _,
+                ref mut token,
                 ref mut expression,
-            } => *expression = expr,
+            } => {
+                token.token_type = expr.get_token();
+                *expression = expr
+            }
             _ => (),
         }
     }

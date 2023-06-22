@@ -65,6 +65,7 @@ impl Parser {
     }
 
     pub fn parse_infix_expression(&mut self, left_expr: &Expression) -> Expression {
+        self.next_token();
         Expression::Infix {
             token: self.curr_token.clone(),
             left: {
