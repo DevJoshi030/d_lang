@@ -1,0 +1,74 @@
+use crate::{
+    ast::{Expression, Statement},
+    token::{Token, TokenType},
+};
+
+use super::{precedence::Precedence, Parser};
+
+impl Parser {
+    pub fn parse_expression_statement(&mut self) -> Option<Statement> {
+        let mut stmt = Statement::new(self.curr_token.token_type);
+
+        stmt.set_expression(self.parse_expression(Precedence::LOWEST));
+        stmt.set_expression_literal();
+
+        if self.peek_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        Some(stmt)
+    }
+
+    pub fn parse_expression(&mut self, prec: Precedence) -> Expression {
+        let prefix_option = self.prefix_parse_fns.get(&self.curr_token.token_type);
+
+        let prefix = match prefix_option {
+            Some(prefix) => prefix,
+            None => {
+                self.no_prefix_parse_fn_error(self.curr_token.token_type);
+                return Expression::NoExpression;
+            }
+        };
+
+        prefix(self)
+    }
+
+    pub fn parse_prefix_expression(&mut self) -> Expression {
+        Expression::Prefix {
+            token: self.curr_token.clone(),
+            operator: self.curr_token.literal.clone(),
+            right: {
+                self.next_token();
+                let expr = self.parse_expression(Precedence::PREFIX);
+                match expr {
+                    Expression::Identifier { token: _, value } => value.parse().unwrap(),
+                    Expression::IntegerLiteral { token: _, value } => value,
+                    _ => -1,
+                }
+            },
+        }
+    }
+
+    pub fn parse_identifier(&mut self) -> Expression {
+        Expression::Identifier {
+            token: Token {
+                token_type: TokenType::IDENT,
+                literal: self.curr_token.literal.clone(),
+            },
+            value: self.curr_token.literal.clone(),
+        }
+    }
+
+    pub fn parse_integer_literal(&mut self) -> Expression {
+        Expression::IntegerLiteral {
+            token: Token {
+                token_type: TokenType::INT,
+                literal: self.curr_token.literal.clone(),
+            },
+            value: self.curr_token.literal.clone().parse().expect(&format!(
+                "Failed to parse int, got={}",
+                self.curr_token.literal.clone(),
+            )),
+        }
+    }
+}

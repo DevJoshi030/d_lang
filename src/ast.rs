@@ -22,6 +22,12 @@ pub enum Expression {
         operator: String,
         right: i32,
     },
+    Infix {
+        token: Token,
+        left: i32,
+        operator: String,
+        right: i32,
+    },
     NoExpression,
 }
 
@@ -32,6 +38,12 @@ impl Node for Expression {
             Expression::IntegerLiteral { token, value: _ } => &token.literal,
             Expression::Prefix {
                 token,
+                operator: _,
+                right: _,
+            } => &token.literal,
+            Expression::Infix {
+                token,
+                left: _,
                 operator: _,
                 right: _,
             } => &token.literal,
@@ -48,6 +60,17 @@ impl Node for Expression {
                 operator,
                 right,
             } => sf!(format!("({}{})", operator, right.to_string())),
+            Expression::Infix {
+                token: _,
+                left,
+                operator,
+                right,
+            } => sf!(format!(
+                "({} {} {})",
+                left.to_string(),
+                operator,
+                right.to_string()
+            )),
             Expression::NoExpression => sf!("\0"),
         }
     }

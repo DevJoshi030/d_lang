@@ -202,42 +202,121 @@ fn test_prefix_expressions() {
                 panic!("expr is not {}, got={}", op, oper);
             }
 
-            if !test_integer_literal(expr, int_val) {
+            if !test_integer_literal(&expr, int_val, 0) {
                 return;
             }
         })
 }
 
-fn test_integer_literal(expr: Expression, val: i32) -> bool {
-    let right = match expr {
+#[test]
+fn test_infix_expressions() {
+    let input: Vec<String> = vec![
+        sf!("1 + 2;"),
+        sf!("3 - 4;"),
+        sf!("5 * 6;"),
+        sf!("7 / 8;"),
+        sf!("9 > 10;"),
+        sf!("11 < 12;"),
+        sf!("13 == 14;"),
+        sf!("15 != 16;"),
+    ];
+
+    let lefts = vec![1, 3, 5, 7, 9, 11, 13, 15];
+    let operators: Vec<String> = vec![
+        sf!("+"),
+        sf!("-"),
+        sf!("*"),
+        sf!("/"),
+        sf!(">"),
+        sf!("<"),
+        sf!("=="),
+        sf!("!="),
+    ];
+    let rights = vec![2, 4, 6, 8, 10, 12, 14, 16];
+
+    lefts
+        .iter()
+        .zip(operators)
+        .zip(rights)
+        .enumerate()
+        .for_each(|(idx, ((left, op), right))| {
+            let l = Lexer::new(input.get(idx).unwrap().chars().collect());
+            let mut p = Parser::new(l);
+            let program = p.parse_program();
+            p.check_parse_errors();
+
+            if program.statements.len() != 1 {
+                panic!(
+                    "program.statements does not have enough statements. got {}",
+                    program.statements.len()
+                );
+            }
+
+            let stmt = program.statements.get(0).unwrap();
+
+            let expr = match stmt {
+                Statement::ExpressionStatement {
+                    token: _,
+                    expression,
+                } => expression.clone(),
+                _ => panic!("Statement is not EXPRESSION"),
+            };
+
+            let oper = match expr {
+                Expression::Infix {
+                    token: _,
+                    left: _,
+                    ref operator,
+                    right: _,
+                } => operator.clone(),
+                _ => sf!("\0"),
+            };
+
+            if oper.as_str() != op {
+                panic!("expr is not {}, got={}", op, oper);
+            }
+
+            if !test_integer_literal(&expr, right, *left) {
+                return;
+            }
+        })
+}
+
+fn test_integer_literal(expr: &Expression, right: i32, left: i32) -> bool {
+    let op = sf!("");
+    let (left_expr, right_expr, op, kind) = match expr {
         Expression::Prefix {
             token: _,
-            operator: _,
+            operator,
             right,
-        } => right,
-        _ => -1,
+        } => (0, *right, operator, "pre"),
+        Expression::Infix {
+            token: _,
+            left,
+            operator,
+            right,
+        } => (*left, *right, operator, "in"),
+        _ => (-1, -1, &op, ""),
     };
 
-    if right != val {
-        panic!("value is not {}, got={}", val, right);
+    match kind {
+        "pre" => test_val(right, right_expr),
+        "in" => {
+            test_val(left, left_expr);
+            test_val(right, right_expr)
+        }
+        _ => (),
     }
 
-    let oper = match expr {
-        Expression::Prefix {
-            token: _,
-            ref operator,
-            right: _,
-        } => operator.clone(),
-        _ => sf!("\0"),
-    };
-
-    if expr.token_literal() != oper {
-        panic!(
-            "token literal is not {}, got={}",
-            oper,
-            expr.token_literal()
-        );
+    if expr.token_literal() != op {
+        panic!("token literal is not {}, got={}", op, expr.token_literal());
     }
 
     true
+}
+
+fn test_val(first: i32, sec: i32) {
+    if first != sec {
+        panic!("value is not {}, got={}", first, sec);
+    }
 }
