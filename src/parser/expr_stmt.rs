@@ -30,9 +30,9 @@ impl Parser {
             }
         };
 
-        let left = prefix(self);
+        let mut left = prefix(self);
 
-        while !self.peek_token_is(TokenType::SEMICOLON) && prec <= self.peek_precedence() {
+        while !self.peek_token_is(TokenType::SEMICOLON) && prec < self.peek_precedence() {
             let infix_option = self.infix_parse_fns.get(&self.peek_token.token_type);
 
             let infix = match infix_option {
@@ -42,7 +42,7 @@ impl Parser {
                 }
             };
 
-            return infix(self, &left);
+            left = infix(self, &left);
         }
 
         left

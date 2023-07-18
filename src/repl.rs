@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::{lexer::Lexer, parser::Parser};
+use crate::{ast::Node, lexer::Lexer, parser::Parser};
 
 const PROMT: &str = ">>> ";
 
@@ -21,6 +21,7 @@ pub fn run() {
 
         for statement in program.statements {
             println!("{:#?}", statement);
+            println!("Parsed value: {:#?}", statement.to_string());
         }
     }
 }
