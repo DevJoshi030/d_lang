@@ -202,7 +202,7 @@ fn test_prefix_expressions() {
                 panic!("expr is not {}, got={}", op, oper);
             }
 
-            if !test_integer_literal(&expr, int_val, 0) {
+            if !test_integer_literal(&expr, int_val, 0, op.clone()) {
                 return;
             }
         })
@@ -276,35 +276,25 @@ fn test_infix_expressions() {
                 panic!("expr is not {}, got={}", op, oper);
             }
 
-            if !test_integer_literal(&expr, right, *left) {
+            if !test_integer_literal(&expr, right, *left, op) {
                 return;
             }
         })
 }
 
-fn test_integer_literal(expr: &Expression, right: i32, left: i32) -> bool {
-    let op = sf!("");
-    let (left_expr, right_expr, op, kind) = match expr {
+fn test_integer_literal(expr: &Expression, right: i32, left: i32, op: String) -> bool {
+    match expr {
         Expression::Prefix {
             token: _,
-            operator,
-            right,
-        } => (0, *right, operator, "pre"),
+            operator: _,
+            right: _,
+        } => test_val(format!("({}{})", op, right), expr.to_string()),
         Expression::Infix {
             token: _,
-            left,
-            operator,
-            right,
-        } => (*left, *right, operator, "in"),
-        _ => (-1, -1, &op, ""),
-    };
-
-    match kind {
-        "pre" => test_val(right, right_expr),
-        "in" => {
-            test_val(left, left_expr);
-            test_val(right, right_expr)
-        }
+            left: _,
+            operator: _,
+            right: _,
+        } => test_val(format!("({} {} {})", left, op, right), expr.to_string()),
         _ => (),
     }
 
@@ -315,8 +305,8 @@ fn test_integer_literal(expr: &Expression, right: i32, left: i32) -> bool {
     true
 }
 
-fn test_val(first: i32, sec: i32) {
-    if first != sec {
+fn test_val(first: String, sec: String) {
+    if first.ne(&sec) {
         panic!("value is not {}, got={}", first, sec);
     }
 }

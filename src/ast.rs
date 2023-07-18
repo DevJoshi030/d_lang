@@ -20,13 +20,13 @@ pub enum Expression {
     Prefix {
         token: Token,
         operator: String,
-        right: i32,
+        right: Box<Expression>,
     },
     Infix {
         token: Token,
-        left: i32,
+        left: Box<Expression>,
         operator: String,
-        right: i32,
+        right: Box<Expression>,
     },
     NoExpression,
 }
