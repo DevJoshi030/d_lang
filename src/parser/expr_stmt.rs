@@ -95,4 +95,14 @@ impl Parser {
             )),
         }
     }
+
+    pub fn parse_boolean(&mut self) -> Expression {
+        Expression::BooleanLiteral {
+            token: self.curr_token.clone(),
+            value: self.curr_token.literal.clone().parse().expect(&format!(
+                "Failed to parse int, got={}",
+                self.curr_token.literal.clone(),
+            )),
+        }
+    }
 }

@@ -45,6 +45,8 @@ impl Parser {
         p.register_prefix(TokenType::INT, Parser::parse_integer_literal);
         p.register_prefix(TokenType::BANG, Parser::parse_prefix_expression);
         p.register_prefix(TokenType::MINUS, Parser::parse_prefix_expression);
+        p.register_prefix(TokenType::TRUE, Parser::parse_boolean);
+        p.register_prefix(TokenType::FALSE, Parser::parse_boolean);
 
         p.register_infix(TokenType::PLUS, Parser::parse_infix_expression);
         p.register_infix(TokenType::MINUS, Parser::parse_infix_expression);

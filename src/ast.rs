@@ -17,6 +17,10 @@ pub enum Expression {
         token: Token,
         value: i32,
     },
+    BooleanLiteral {
+        token: Token,
+        value: bool,
+    },
     Prefix {
         token: Token,
         operator: String,
@@ -36,6 +40,7 @@ impl Expression {
         match self {
             Expression::Identifier { token, value: _ } => token.token_type,
             Expression::IntegerLiteral { token, value: _ } => token.token_type,
+            Expression::BooleanLiteral { token, value: _ } => token.token_type,
             Expression::Prefix {
                 token,
                 operator: _,
@@ -57,6 +62,7 @@ impl Node for Expression {
         match self {
             Expression::Identifier { token, value: _ } => &token.literal,
             Expression::IntegerLiteral { token, value: _ } => &token.literal,
+            Expression::BooleanLiteral { token, value: _ } => &token.literal,
             Expression::Prefix {
                 token,
                 operator: _,
@@ -76,6 +82,7 @@ impl Node for Expression {
         match self {
             Expression::Identifier { token: _, value } => value.clone(),
             Expression::IntegerLiteral { token: _, value } => value.to_string(),
+            Expression::BooleanLiteral { token: _, value } => value.to_string(),
             Expression::Prefix {
                 token: _,
                 operator,
