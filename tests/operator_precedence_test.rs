@@ -12,6 +12,11 @@ fn test_operator_precedence() {
         sf!("false"),
         sf!("3 > 5 == false"),
         sf!("3 < 5 == true"),
+        sf!("1 + (2 + 3) + 4"),
+        sf!("(5 + 5) * 2"),
+        sf!("2 / (5 + 5)"),
+        sf!("-(5 + 5)"),
+        sf!("!(true == true)"),
     ];
 
     let results: Vec<String> = vec![
@@ -19,6 +24,11 @@ fn test_operator_precedence() {
         sf!("false"),
         sf!("((3 > 5) == false)"),
         sf!("((3 < 5) == true)"),
+        sf!("((1 + (2 + 3)) + 4)"),
+        sf!("((5 + 5) * 2)"),
+        sf!("(2 / (5 + 5))"),
+        sf!("(-(5 + 5))"),
+        sf!("(!(true == true))"),
     ];
 
     results.iter().enumerate().for_each(|(idx, result)| {

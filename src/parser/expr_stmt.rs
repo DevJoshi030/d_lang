@@ -105,4 +105,15 @@ impl Parser {
             )),
         }
     }
+
+    pub fn parse_grouped_expression(&mut self) -> Expression {
+        self.next_token();
+        let expr = self.parse_expression(Precedence::LOWEST);
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("Error: no RPAREN found");
+        }
+
+        expr
+    }
 }
