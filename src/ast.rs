@@ -32,6 +32,12 @@ pub enum Expression {
         operator: String,
         right: Box<Expression>,
     },
+    IfExpression {
+        token: Token,
+        condition: Box<Expression>,
+        consequence: Box<Statement>,
+        alternative: Box<Option<Statement>>,
+    },
     NoExpression,
 }
 
@@ -51,6 +57,12 @@ impl Expression {
                 left: _,
                 operator: _,
                 right: _,
+            } => token.token_type,
+            Expression::IfExpression {
+                token,
+                condition: _,
+                consequence: _,
+                alternative: _,
             } => token.token_type,
             Expression::NoExpression => TokenType::ILLEGAL,
         }
@@ -73,6 +85,12 @@ impl Node for Expression {
                 left: _,
                 operator: _,
                 right: _,
+            } => &token.literal,
+            Expression::IfExpression {
+                token,
+                condition: _,
+                consequence: _,
+                alternative: _,
             } => &token.literal,
             Expression::NoExpression => "\0",
         }
@@ -99,6 +117,23 @@ impl Node for Expression {
                 operator,
                 right.to_string()
             )),
+            Expression::IfExpression {
+                token: _,
+                condition,
+                consequence,
+                alternative,
+            } => {
+                let mut if_part: String = sf!(format!(
+                    "if {} {}",
+                    condition.to_string(),
+                    consequence.to_string()
+                ));
+                match *alternative.clone() {
+                    Some(alt) => if_part.push_str(format!(" else {}", alt.to_string()).as_str()),
+                    None => (),
+                }
+                if_part
+            }
             Expression::NoExpression => sf!("\0"),
         }
     }
@@ -118,6 +153,10 @@ pub enum Statement {
     ExpressionStatement {
         token: Token,
         expression: Expression,
+    },
+    BlockStatement {
+        token: Token,
+        statements: Vec<Statement>,
     },
 }
 
@@ -153,6 +192,17 @@ impl Node for Statement {
             } => {
                 format!("{}", expression.to_string())
             }
+            Statement::BlockStatement {
+                token: _,
+                statements,
+            } => {
+                let mut blk_stmt = String::from("{ ");
+                statements
+                    .iter()
+                    .for_each(|stmt| blk_stmt.push_str(stmt.to_string().as_str()));
+                blk_stmt.push_str(" }");
+                blk_stmt
+            }
         }
     }
 }
@@ -180,6 +230,13 @@ impl Statement {
                     literal: sf!("return"),
                 },
                 value: Expression::NoExpression,
+            },
+            TokenType::BLOCK => Statement::BlockStatement {
+                token: Token {
+                    token_type: TokenType::BLOCK,
+                    literal: sf!("block"),
+                },
+                statements: vec![],
             },
             token_type => Statement::ExpressionStatement {
                 token: Token {
@@ -221,6 +278,26 @@ impl Statement {
                 ref mut token,
                 expression,
             } => token.literal = sf!(expression.token_literal()),
+            _ => (),
+        }
+    }
+
+    pub fn set_block_token(&mut self, blk_token: Token) {
+        match self {
+            Statement::BlockStatement {
+                ref mut token,
+                statements: _,
+            } => *token = blk_token,
+            _ => (),
+        }
+    }
+
+    pub fn add_block_stmt(&mut self, stmt: Statement) {
+        match self {
+            Statement::BlockStatement {
+                token: _,
+                ref mut statements,
+            } => statements.push(stmt),
             _ => (),
         }
     }

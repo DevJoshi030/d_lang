@@ -2,6 +2,7 @@
 pub enum TokenType {
     ILLEGAL,
     EOF,
+    BLOCK,
 
     // Identifiers + literals;
     IDENT,

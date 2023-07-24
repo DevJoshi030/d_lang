@@ -116,4 +116,41 @@ impl Parser {
 
         expr
     }
+
+    pub fn parse_if_expression(&mut self) -> Expression {
+        let curr_token = self.curr_token.clone();
+
+        self.next_token();
+        let cond = self.parse_expression(Precedence::LOWEST);
+
+        if !self.expect_peek(TokenType::LBRACE) {
+            panic!("LBRACE Expected!!!");
+        }
+
+        let consequence = self.parse_block_statement().unwrap();
+        let mut alternative = Box::new(None);
+
+        if self.peek_token_is(TokenType::ELSE) {
+            self.next_token();
+
+            if self.peek_token_is(TokenType::IF) {
+                self.next_token();
+                let mut stmt = Statement::new(TokenType::IF);
+                stmt.set_expression(self.parse_if_expression());
+                alternative = Box::new(Some(stmt));
+            } else {
+                if !self.expect_peek(TokenType::LBRACE) {
+                    panic!("LBRACE Expected!!!");
+                }
+                alternative = Box::new(self.parse_block_statement());
+            }
+        }
+
+        Expression::IfExpression {
+            token: curr_token,
+            condition: Box::new(cond),
+            consequence: Box::new(consequence),
+            alternative,
+        }
+    }
 }
