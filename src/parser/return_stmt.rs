@@ -4,13 +4,12 @@ use super::Parser;
 
 impl Parser {
     pub fn parse_return_statement(&mut self) -> Option<Statement> {
-        let stmt = Statement::new(TokenType::RETURN);
+        let mut stmt = Statement::new(TokenType::RETURN);
 
         self.next_token();
+        stmt.set_value(self.parse_expression(super::precedence::Precedence::LOWEST));
 
-        // TODO: Skipping expression till semicolon
-
-        while !self.curr_token_is(TokenType::SEMICOLON) {
+        while !self.curr_token_is(TokenType::SEMICOLON) && !self.curr_token_is(TokenType::EOF) {
             self.next_token();
         }
 

@@ -322,6 +322,21 @@ impl Statement {
         }
     }
 
+    pub fn set_value(&mut self, expr_value: Expression) {
+        match self {
+            Statement::LetStatement {
+                token: _,
+                name: _,
+                ref mut value,
+            } => *value = expr_value,
+            Statement::ReturnStatement {
+                token: _,
+                ref mut value,
+            } => *value = expr_value,
+            _ => (),
+        }
+    }
+
     pub fn set_expression(&mut self, expr: Expression) {
         match self {
             Statement::ExpressionStatement {

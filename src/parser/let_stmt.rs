@@ -24,9 +24,10 @@ impl Parser {
             return None;
         }
 
-        // TODO: Skipping expression till semicolon
+        self.next_token();
+        stmt.set_value(self.parse_expression(super::precedence::Precedence::LOWEST));
 
-        while !self.curr_token_is(TokenType::SEMICOLON) {
+        while !self.curr_token_is(TokenType::SEMICOLON) && !self.curr_token_is(TokenType::EOF) {
             self.next_token();
         }
 
