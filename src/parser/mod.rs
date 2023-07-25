@@ -62,6 +62,7 @@ impl Parser {
         p.register_infix(TokenType::NOTEQ, Parser::parse_infix_expression);
         p.register_infix(TokenType::LT, Parser::parse_infix_expression);
         p.register_infix(TokenType::GT, Parser::parse_infix_expression);
+        p.register_infix(TokenType::LPAREN, Parser::parse_call_expression);
 
         p.next_token();
         p.next_token();

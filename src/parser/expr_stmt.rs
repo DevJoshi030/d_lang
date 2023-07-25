@@ -111,7 +111,7 @@ impl Parser {
         let expr = self.parse_expression(Precedence::LOWEST);
 
         if !self.expect_peek(TokenType::RPAREN) {
-            panic!("Error: no RPAREN found");
+            panic!("Error: no RPAREN found in grouped expression");
         }
 
         expr
@@ -209,5 +209,40 @@ impl Parser {
         }
 
         identifiers
+    }
+
+    pub fn parse_call_expression(&mut self, left_expr: &Expression) -> Expression {
+        self.next_token();
+        let curr_token = self.curr_token.clone();
+        let args = self.parse_call_args();
+        Expression::CallExpression {
+            token: curr_token,
+            func: Box::new(left_expr.clone()),
+            args,
+        }
+    }
+
+    fn parse_call_args(&mut self) -> Vec<Expression> {
+        let mut args = vec![];
+
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return args;
+        }
+
+        self.next_token();
+        args.push(self.parse_expression(Precedence::LOWEST));
+
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            args.push(self.parse_expression(Precedence::LOWEST));
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("RPAREN Expected after LPAREN!!!")
+        }
+
+        args
     }
 }

@@ -43,6 +43,11 @@ pub enum Expression {
         parameters: Vec<Expression>,
         body: Box<Statement>,
     },
+    CallExpression {
+        token: Token,
+        func: Box<Expression>,
+        args: Vec<Expression>,
+    },
     NoExpression,
 }
 
@@ -73,6 +78,11 @@ impl Expression {
                 token,
                 parameters: _,
                 body: _,
+            } => token.token_type,
+            Expression::CallExpression {
+                token,
+                func: _,
+                args: _,
             } => token.token_type,
             Expression::NoExpression => TokenType::ILLEGAL,
         }
@@ -106,6 +116,11 @@ impl Node for Expression {
                 token,
                 parameters: _,
                 body: _,
+            } => &token.literal,
+            Expression::CallExpression {
+                token,
+                func: _,
+                args: _,
             } => &token.literal,
             Expression::NoExpression => "\0",
         }
@@ -155,7 +170,7 @@ impl Node for Expression {
                 body,
             } => {
                 let mut func = String::from("fn(");
-                let len: usize = parameters.len();
+                let len = parameters.len();
                 parameters.iter().enumerate().for_each(|(i, param)| {
                     func.push_str(param.to_string().as_str());
                     if i != len - 1 {
@@ -165,6 +180,22 @@ impl Node for Expression {
                 func.push_str(") ");
                 func.push_str(body.to_string().as_str());
                 func
+            }
+            Expression::CallExpression {
+                token: _,
+                func,
+                args,
+            } => {
+                let mut call = String::from(func.to_string() + "(");
+                let len = args.len();
+                args.iter().enumerate().for_each(|(i, arg)| {
+                    call.push_str(arg.to_string().as_str());
+                    if i != len - 1 {
+                        call.push_str(", ");
+                    }
+                });
+                call.push_str(")");
+                call
             }
             Expression::NoExpression => sf!("\0"),
         }

@@ -251,3 +251,41 @@ fn test_func_expression() {
         );
     }
 }
+
+#[test]
+fn test_call_expression() {
+    let input: Vec<char> = "add(1, 2 * 3, 4 + 5);".chars().collect();
+
+    let result = "add(1, (2 * 3), (4 + 5))";
+
+    let l = Lexer::new(input);
+    let mut p = Parser::new(l);
+
+    let program = p.parse_program();
+    p.check_parse_errors();
+
+    if program.statements.len() != 1 {
+        panic!(
+            "program.statements does not have enough statements. got {}",
+            program.statements.len()
+        );
+    }
+
+    let stmt = program.statements.get(0).unwrap();
+
+    let expr = match stmt {
+        Statement::ExpressionStatement {
+            token: _,
+            expression,
+        } => expression.clone(),
+        _ => panic!("Statement is not EXPRESSION"),
+    };
+
+    if expr.to_string() != result {
+        panic!(
+            "expr is not correct expected={}, got={}",
+            result,
+            expr.to_string()
+        );
+    }
+}
