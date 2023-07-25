@@ -52,6 +52,7 @@ impl Parser {
         p.register_prefix(TokenType::RPAREN, Parser::parse_grouped_expression);
         p.register_prefix(TokenType::PLUS, Parser::parse_grouped_expression);
         p.register_prefix(TokenType::IF, Parser::parse_if_expression);
+        p.register_prefix(TokenType::FUNCTION, Parser::parse_func_expression);
 
         p.register_infix(TokenType::PLUS, Parser::parse_infix_expression);
         p.register_infix(TokenType::MINUS, Parser::parse_infix_expression);

@@ -38,6 +38,11 @@ pub enum Expression {
         consequence: Box<Statement>,
         alternative: Box<Option<Statement>>,
     },
+    FuncExpression {
+        token: Token,
+        parameters: Vec<Expression>,
+        body: Box<Statement>,
+    },
     NoExpression,
 }
 
@@ -63,6 +68,11 @@ impl Expression {
                 condition: _,
                 consequence: _,
                 alternative: _,
+            } => token.token_type,
+            Expression::FuncExpression {
+                token,
+                parameters: _,
+                body: _,
             } => token.token_type,
             Expression::NoExpression => TokenType::ILLEGAL,
         }
@@ -91,6 +101,11 @@ impl Node for Expression {
                 condition: _,
                 consequence: _,
                 alternative: _,
+            } => &token.literal,
+            Expression::FuncExpression {
+                token,
+                parameters: _,
+                body: _,
             } => &token.literal,
             Expression::NoExpression => "\0",
         }
@@ -133,6 +148,23 @@ impl Node for Expression {
                     None => (),
                 }
                 if_part
+            }
+            Expression::FuncExpression {
+                token: _,
+                parameters,
+                body,
+            } => {
+                let mut func = String::from("fn(");
+                let len: usize = parameters.len();
+                parameters.iter().enumerate().for_each(|(i, param)| {
+                    func.push_str(param.to_string().as_str());
+                    if i != len - 1 {
+                        func.push_str(", ");
+                    }
+                });
+                func.push_str(") ");
+                func.push_str(body.to_string().as_str());
+                func
             }
             Expression::NoExpression => sf!("\0"),
         }

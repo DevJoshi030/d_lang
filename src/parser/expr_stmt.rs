@@ -124,7 +124,7 @@ impl Parser {
         let cond = self.parse_expression(Precedence::LOWEST);
 
         if !self.expect_peek(TokenType::LBRACE) {
-            panic!("LBRACE Expected!!!");
+            panic!("LBRACE Expected after condition!!!");
         }
 
         let consequence = self.parse_block_statement().unwrap();
@@ -140,7 +140,7 @@ impl Parser {
                 alternative = Box::new(Some(stmt));
             } else {
                 if !self.expect_peek(TokenType::LBRACE) {
-                    panic!("LBRACE Expected!!!");
+                    panic!("LBRACE Expected after else!!!");
                 }
                 alternative = Box::new(self.parse_block_statement());
             }
@@ -152,5 +152,62 @@ impl Parser {
             consequence: Box::new(consequence),
             alternative,
         }
+    }
+
+    pub fn parse_func_expression(&mut self) -> Expression {
+        let curr_token = self.curr_token.clone();
+
+        if !self.expect_peek(TokenType::LPAREN) {
+            panic!("LPAREN Expected after fn!!!");
+        }
+
+        let parameters = self.parse_func_parameters();
+
+        if !self.expect_peek(TokenType::LBRACE) {
+            panic!("LBRACE Expected after parameters!!!");
+        }
+
+        let body = self.parse_block_statement().unwrap();
+
+        Expression::FuncExpression {
+            token: curr_token,
+            parameters,
+            body: Box::new(body),
+        }
+    }
+
+    fn parse_func_parameters(&mut self) -> Vec<Expression> {
+        let mut identifiers = vec![];
+
+        if self.peek_token_is(TokenType::RPAREN) {
+            self.next_token();
+            return identifiers;
+        }
+
+        self.next_token();
+
+        let ident = Expression::Identifier {
+            token: self.curr_token.clone(),
+            value: self.curr_token.literal.clone(),
+        };
+
+        identifiers.push(ident);
+
+        while self.peek_token_is(TokenType::COMMA) {
+            self.next_token();
+            self.next_token();
+            let ident = Expression::Identifier {
+                token: self.curr_token.clone(),
+                value: self.curr_token.literal.clone(),
+            };
+
+            identifiers.push(ident);
+        }
+
+        if !self.expect_peek(TokenType::RPAREN) {
+            panic!("RPAREN Expected after LPAREN!!!")
+        }
+
+        identifiers
     }
 }
