@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::{ast::Node, lexer::Lexer, parser::Parser};
+use crate::{evaluator::eval_statements, lexer::Lexer, parser::Parser};
 
 const PROMT: &str = ">>> ";
 
@@ -19,9 +19,12 @@ pub fn run() {
         let program = p.parse_program();
         p.check_parse_errors();
 
-        for statement in program.statements {
-            println!("{:#?}", statement);
-            println!("Parsed value: {:#?}", statement.to_string());
-        }
+        // for statement in program.statements {
+        //     println!("{:#?}", statement);
+        //     println!("Parsed value: {:#?}", statement.to_string());
+        // }
+        let stmts = program.statements;
+        let evaluated = eval_statements(stmts);
+        println!("{:#?}", evaluated);
     }
 }
