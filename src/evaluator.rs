@@ -3,16 +3,18 @@ use crate::{
     object::Object,
 };
 
-pub fn eval_statements(statements: Vec<Statement>) -> Object {
+pub fn eval_statements(statements: Vec<Statement>, p_req: bool) -> Object {
     let mut result = Object::Null {};
     statements.iter().for_each(|stmt| {
         result = eval(stmt.clone());
-        println!("{:#?}", result);
+        if p_req {
+            println!("{:#?}", result);
+        }
     });
     result
 }
 
-fn eval(stmt: Statement) -> Object {
+pub fn eval(stmt: Statement) -> Object {
     match stmt {
         Statement::LetStatement { token, name, value } => todo!(),
         Statement::ReturnStatement { token, value } => todo!(),
@@ -20,7 +22,10 @@ fn eval(stmt: Statement) -> Object {
             token: _,
             expression,
         } => eval_expr(expression.clone()),
-        Statement::BlockStatement { token, statements } => todo!(),
+        Statement::BlockStatement {
+            token: _,
+            statements,
+        } => eval_statements(statements, false),
     }
 }
 
@@ -43,11 +48,11 @@ fn eval_expr(expr: Expression) -> Object {
             right,
         } => eval_infix_expr(eval_expr(*left), operator, eval_expr(*right)),
         Expression::IfExpression {
-            token,
+            token: _,
             condition,
             consequence,
             alternative,
-        } => todo!(),
+        } => eval_if_expr(condition, consequence, alternative),
         Expression::FuncExpression {
             token,
             parameters,
@@ -137,5 +142,26 @@ fn eval_bool_infix_expr(left: bool, operator: String, right: bool) -> Object {
             value: left != right,
         },
         _ => Object::Null {},
+    }
+}
+
+fn eval_if_expr(
+    condition: Box<Expression>,
+    consequence: Box<Statement>,
+    alternative: Box<Option<Statement>>,
+) -> Object {
+    let cond = eval_expr(*condition);
+    let cond_val: bool = match cond {
+        Object::Boolean { value } => value,
+        Object::Null {} => false,
+        _ => true,
+    };
+
+    if cond_val {
+        eval(*consequence)
+    } else if let Some(stmt) = *alternative {
+        eval(stmt)
+    } else {
+        Object::Null {}
     }
 }

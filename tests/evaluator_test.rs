@@ -80,6 +80,26 @@ fn test_bang_oper() {
     })
 }
 
+#[test]
+fn test_if_else_expr() {
+    let input: Vec<String> = vec![
+        sf!("if (true) { 10 }"),
+        sf!("if (false) { 10 }"),
+        sf!("if (1) { 10 }"),
+        sf!("if (1 < 2) { 10 }"),
+        sf!("if (1 > 2) { 10 }"),
+        sf!("if (1 > 2) { 10 } else { 20 }"),
+        sf!("if (1 < 2) { 10 } else { 20 }"),
+    ];
+    let results: Vec<Option<i64>> =
+        vec![Some(10), None, Some(10), Some(10), None, Some(20), Some(10)];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        test_opt_int_obj(evaluated, *r);
+    })
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);
@@ -87,7 +107,7 @@ fn test_eval(input: String) -> Object {
 
     println!("{:#?}", program.statements);
 
-    eval_statements(program.statements)
+    eval_statements(program.statements, true)
 }
 
 fn test_int_obj(eval: Object, r: i64) {
@@ -111,5 +131,24 @@ fn test_bool_obj(eval: Object, r: bool) {
 
     if eval_value != r {
         panic!("value is not {}, got={}", r, eval_value);
+    }
+}
+
+fn test_opt_int_obj(eval: Object, r: Option<i64>) {
+    match r {
+        Some(r_val) => {
+            let eval_value;
+            match eval {
+                Object::Integer { value } => eval_value = value,
+                _ => panic!("object is not integer, got={}", eval.get_type()),
+            }
+            if eval_value != r_val {
+                panic!("value is not {}, got={}", r_val, eval_value);
+            }
+        }
+        None => match eval {
+            Object::Null {} => {}
+            _ => panic!("object is not NULL, got={}", eval.get_type()),
+        },
     }
 }

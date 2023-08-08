@@ -14,8 +14,7 @@ pub fn lpe(input: String) {
     let program = p.parse_program();
     p.check_parse_errors();
 
-    let stmts = program.statements;
-    eval_statements(stmts);
+    eval_statements(program.statements, true);
 }
 
 pub fn run() {
