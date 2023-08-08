@@ -5,9 +5,10 @@ use crate::{
 
 pub fn eval_statements(statements: Vec<Statement>) -> Object {
     let mut result = Object::Null {};
-    statements
-        .iter()
-        .for_each(|stmt| result = eval(stmt.clone()));
+    statements.iter().for_each(|stmt| {
+        result = eval(stmt.clone());
+        println!("{:#?}", result);
+    });
     result
 }
 

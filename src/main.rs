@@ -1,3 +1,5 @@
+use std::env;
+
 mod ast;
 mod evaluator;
 pub mod lexer;
@@ -39,5 +41,15 @@ fn main() {
                   .[[\OOOOOO/[.                  
         "
     );
-    repl::run();
+
+    let filename = match env::args().collect::<Vec<String>>().get(1) {
+        Some(f) => f.clone(),
+        None => "".to_string(),
+    };
+
+    if filename == "" {
+        repl::run();
+    } else {
+        repl::run_file(filename);
+    }
 }
