@@ -3,8 +3,8 @@ use macros::sf;
 
 #[test]
 fn test_eval_int_expr() {
-    let input: Vec<String> = vec![sf!("5"), sf!("10")];
-    let results: Vec<i64> = vec![5, 10];
+    let input: Vec<String> = vec![sf!("5"), sf!("10"), sf!("-5"), sf!("-10")];
+    let results: Vec<i64> = vec![5, 10, -5, -10];
 
     results.iter().enumerate().for_each(|(i, r)| {
         let evaluated = test_eval(input.get(i).unwrap().clone());

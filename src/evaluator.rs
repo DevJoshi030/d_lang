@@ -60,6 +60,7 @@ fn eval_expr(expr: Expression) -> Object {
 fn eval_prefix_expr(operator: String, right: Object) -> Object {
     match operator.as_str() {
         "!" => eval_bang_operator_expr(right),
+        "-" => eval_minus_operator_expr(right),
         _ => Object::Null {},
     }
 }
@@ -68,5 +69,12 @@ fn eval_bang_operator_expr(right: Object) -> Object {
     match right {
         Object::Boolean { value } => Object::Boolean { value: !value },
         _ => Object::Boolean { value: false },
+    }
+}
+
+fn eval_minus_operator_expr(right: Object) -> Object {
+    match right {
+        Object::Integer { value } => Object::Integer { value: -value },
+        _ => Object::Null {},
     }
 }
