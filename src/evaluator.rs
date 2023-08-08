@@ -31,16 +31,16 @@ fn eval_expr(expr: Expression) -> Object {
         },
         Expression::BooleanLiteral { token: _, value } => Object::get_bool_obj(value),
         Expression::Prefix {
-            token,
+            token: _,
             operator,
             right,
         } => eval_prefix_expr(operator, eval_expr(*right)),
         Expression::Infix {
-            token,
+            token: _,
             left,
             operator,
             right,
-        } => todo!(),
+        } => eval_infix_expr(eval_expr(*left), operator, eval_expr(*right)),
         Expression::IfExpression {
             token,
             condition,
@@ -75,6 +75,66 @@ fn eval_bang_operator_expr(right: Object) -> Object {
 fn eval_minus_operator_expr(right: Object) -> Object {
     match right {
         Object::Integer { value } => Object::Integer { value: -value },
+        _ => Object::Null {},
+    }
+}
+
+fn eval_infix_expr(left: Object, operator: String, right: Object) -> Object {
+    return match left {
+        Object::Integer { value: left_val } => {
+            if let Object::Integer { value: right_val } = right {
+                return eval_int_infix_expr(left_val, operator, right_val);
+            }
+            Object::Null {}
+        }
+        Object::Boolean { value: left_val } => {
+            if let Object::Boolean { value: right_val } = right {
+                return eval_bool_infix_expr(left_val, operator, right_val);
+            }
+            Object::Null {}
+        }
+        _ => Object::Null {},
+    };
+}
+
+fn eval_int_infix_expr(left: i64, operator: String, right: i64) -> Object {
+    match operator.as_str() {
+        "+" => Object::Integer {
+            value: left + right,
+        },
+        "-" => Object::Integer {
+            value: left - right,
+        },
+        "*" => Object::Integer {
+            value: left * right,
+        },
+        "/" => Object::Integer {
+            value: left / right,
+        },
+        "<" => Object::Boolean {
+            value: left < right,
+        },
+        ">" => Object::Boolean {
+            value: left > right,
+        },
+        "==" => Object::Boolean {
+            value: left == right,
+        },
+        "!=" => Object::Boolean {
+            value: left != right,
+        },
+        _ => Object::Null {},
+    }
+}
+
+fn eval_bool_infix_expr(left: bool, operator: String, right: bool) -> Object {
+    match operator.as_str() {
+        "==" => Object::Boolean {
+            value: left == right,
+        },
+        "!=" => Object::Boolean {
+            value: left != right,
+        },
         _ => Object::Null {},
     }
 }

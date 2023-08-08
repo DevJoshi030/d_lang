@@ -3,8 +3,24 @@ use macros::sf;
 
 #[test]
 fn test_eval_int_expr() {
-    let input: Vec<String> = vec![sf!("5"), sf!("10"), sf!("-5"), sf!("-10")];
-    let results: Vec<i64> = vec![5, 10, -5, -10];
+    let input: Vec<String> = vec![
+        sf!("5"),
+        sf!("10"),
+        sf!("-5"),
+        sf!("-10"),
+        sf!("5 + 5 + 5 + 5 - 10"),
+        sf!("2 * 2 * 2 * 2 * 2"),
+        sf!("-50 + 100 + -50"),
+        sf!("5 * 2 + 10"),
+        sf!("5 + 2 * 10"),
+        sf!("20 + 2 * -10"),
+        sf!("50 / 2 * 2 + 10"),
+        sf!("2 * (5 + 10)"),
+        sf!("3 * 3 * 3 + 10"),
+        sf!("3 * (3 * 3) + 10"),
+        sf!("(5 + 10 * 2 + 15 / 3) * 2 + -10"),
+    ];
+    let results: Vec<i64> = vec![5, 10, -5, -10, 10, 32, 0, 20, 25, 0, 60, 30, 37, 37, 50];
 
     results.iter().enumerate().for_each(|(i, r)| {
         let evaluated = test_eval(input.get(i).unwrap().clone());
@@ -14,8 +30,31 @@ fn test_eval_int_expr() {
 
 #[test]
 fn test_eval_bool_expr() {
-    let input: Vec<String> = vec![sf!("true"), sf!("false")];
-    let results: Vec<bool> = vec![true, false];
+    let input: Vec<String> = vec![
+        sf!("true"),
+        sf!("false"),
+        sf!("1 < 2"),
+        sf!("1 > 2"),
+        sf!("1 < 1"),
+        sf!("1 > 1"),
+        sf!("1 == 1"),
+        sf!("1 != 1"),
+        sf!("1 == 2"),
+        sf!("1 != 2"),
+        sf!("true == true"),
+        sf!("false == false"),
+        sf!("true == false"),
+        sf!("true != false"),
+        sf!("false != true"),
+        sf!("(1 < 2) == true"),
+        sf!("(1 < 2) == false"),
+        sf!("(1 > 2) == true"),
+        sf!("(1 > 2) == false"),
+    ];
+    let results: Vec<bool> = vec![
+        true, false, true, false, false, false, true, false, false, true, true, true, false, true,
+        true, true, false, false, true,
+    ];
 
     results.iter().enumerate().for_each(|(i, r)| {
         let evaluated = test_eval(input.get(i).unwrap().clone());
