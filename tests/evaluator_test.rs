@@ -23,6 +23,24 @@ fn test_eval_bool_expr() {
     })
 }
 
+#[test]
+fn test_bang_oper() {
+    let input: Vec<String> = vec![
+        sf!("!true"),
+        sf!("!false"),
+        sf!("!5"),
+        sf!("!!true"),
+        sf!("!!false"),
+        sf!("!!5"),
+    ];
+    let results: Vec<bool> = vec![false, true, false, true, false, true];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        test_bool_obj(evaluated, *r);
+    })
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);

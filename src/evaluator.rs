@@ -34,7 +34,7 @@ fn eval_expr(expr: Expression) -> Object {
             token,
             operator,
             right,
-        } => todo!(),
+        } => eval_prefix_expr(operator, eval_expr(*right)),
         Expression::Infix {
             token,
             left,
@@ -54,5 +54,19 @@ fn eval_expr(expr: Expression) -> Object {
         } => todo!(),
         Expression::CallExpression { token, func, args } => todo!(),
         Expression::NoExpression => todo!(),
+    }
+}
+
+fn eval_prefix_expr(operator: String, right: Object) -> Object {
+    match operator.as_str() {
+        "!" => eval_bang_operator_expr(right),
+        _ => Object::Null {},
+    }
+}
+
+fn eval_bang_operator_expr(right: Object) -> Object {
+    match right {
+        Object::Boolean { value } => Object::Boolean { value: !value },
+        _ => Object::Boolean { value: false },
     }
 }
