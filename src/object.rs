@@ -5,6 +5,7 @@ pub enum Object {
     Integer { value: i64 },
     Boolean { value: bool },
     Return { value: Box<Object> },
+    Error { message: String },
     Null {},
 }
 
@@ -14,6 +15,7 @@ impl Object {
             Object::Integer { .. } => sf!("INTEGER"),
             Object::Boolean { .. } => sf!("BOOLEAN"),
             Object::Return { .. } => sf!("RETURN"),
+            Object::Error { .. } => sf!("ERROR"),
             Object::Null {} => sf!("NULL"),
         }
     }
@@ -23,6 +25,7 @@ impl Object {
             Object::Integer { value } => sf!(format!("{}", value)),
             Object::Boolean { value } => sf!(format!("{}", value)),
             Object::Return { value } => sf!(format!("{}", value.inspect())),
+            Object::Error { message } => sf!(format!("ERROR: {}", message)),
             Object::Null {} => sf!("null"),
         }
     }

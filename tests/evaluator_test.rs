@@ -123,6 +123,44 @@ fn test_return_expr() {
     });
 }
 
+#[test]
+fn test_errors() {
+    let input: Vec<String> = vec![
+        sf!("5 + true;"),
+        sf!("5 + true; 5;"),
+        sf!("-true;"),
+        sf!("false + true;"),
+        sf!("5; false + true; 5;"),
+        sf!("if (10 > 1) { true + false; }"),
+        sf!("if (10 > 1) {
+                if (10 > 1) {
+                    return true + false;
+                }
+                return 1;
+            }"),
+    ];
+    let results: Vec<&str> = vec![
+        "type mismatch: INTEGER + BOOLEAN",
+        "type mismatch: INTEGER + BOOLEAN",
+        "unknown operator: -BOOLEAN",
+        "unknown operator: BOOLEAN + BOOLEAN",
+        "unknown operator: BOOLEAN + BOOLEAN",
+        "unknown operator: BOOLEAN + BOOLEAN",
+        "unknown operator: BOOLEAN + BOOLEAN",
+    ];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        if let Object::Error { message } = evaluated {
+            if *r != message {
+                panic!("wrong error message. expected={}, got={}", *r, message);
+            }
+        } else {
+            panic!("No error object returned. got={:#?}", evaluated);
+        }
+    });
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);
