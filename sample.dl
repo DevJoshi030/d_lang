@@ -33,3 +33,9 @@ let d = c + 6;
 let double = fn(x) { x + x; };
 let triple = fn(x, y) { x + y(x);};
 triple(2, double);
+
+let add = fn(a, b) { a + b };
+let sub = fn(a, b) { a - b };
+let applyFunc = fn(a, b, func) { func(a, b) };
+applyFunc(2, 2, add);
+applyFunc(10, 2, sub);
