@@ -1,7 +1,7 @@
 use macros::sf;
 
 use crate::{
-    ast::{Expression, Statement},
+    ast::{Expression, Node, Statement},
     environment::Environment,
     object::Object,
 };
@@ -110,11 +110,21 @@ fn eval_expr(expr: Expression, env: &mut Environment) -> Object {
             ..
         } => eval_if_expr(condition, consequence, alternative, env),
         Expression::FuncExpression {
-            token,
-            parameters,
-            body,
-        } => todo!(),
-        Expression::CallExpression { token, func, args } => todo!(),
+            parameters, body, ..
+        } => Object::Function { parameters, body },
+        Expression::CallExpression { func, args, .. } => {
+            let function = eval_expr(*func, env);
+            if let Object::Error { .. } = function {
+                return function;
+            }
+            let args = eval_args(args, env);
+            if args.len() == 1 {
+                if let Object::Error { .. } = args[0] {
+                    return args[0].clone();
+                }
+            }
+            apply_function(function, args, env)
+        }
         Expression::NoExpression => todo!(),
     }
 }
@@ -267,5 +277,34 @@ fn eval_if_expr(
         eval(stmt, env)
     } else {
         Object::Null {}
+    }
+}
+
+fn eval_args(args: Vec<Expression>, env: &mut Environment) -> Vec<Object> {
+    let mut results = vec![];
+    for arg in args {
+        let evaluated = eval_expr(arg, env);
+        if let Object::Error { .. } = evaluated {
+            return vec![evaluated];
+        }
+        results.push(evaluated);
+    }
+    results
+}
+
+fn apply_function(function: Object, args: Vec<Object>, env: &mut Environment) -> Object {
+    if let Object::Function { parameters, body } = function {
+        parameters
+            .iter()
+            .zip(args)
+            .for_each(|(p, a)| env.set(p.to_string(), a));
+
+        let evaluated = eval(*body, env);
+        if let Object::Return { value } = evaluated {
+            return *value;
+        }
+        evaluated
+    } else {
+        panic!("not a function: {}", function.get_type());
     }
 }

@@ -29,3 +29,7 @@ if a < 55 {
 }
 
 let d = c + 6;
+
+let double = fn(x) { x + x; };
+let triple = fn(x, y) { x + y(x);};
+triple(2, double);

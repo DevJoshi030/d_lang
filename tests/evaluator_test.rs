@@ -1,5 +1,5 @@
 use d_lang::{
-    environment::Environment, evaluator::eval_statements, lexer::Lexer, object::Object,
+    ast::Node, environment::Environment, evaluator::eval_statements, lexer::Lexer, object::Object,
     parser::Parser,
 };
 use macros::sf;
@@ -182,13 +182,60 @@ fn test_let_statements() {
     });
 }
 
+#[test]
+fn test_functions() {
+    let input: Vec<String> = vec![sf!("fn(x) { x + 2; };")];
+
+    input.iter().for_each(|inp| {
+        let evaluated = test_eval(inp.clone());
+        let (parameters, ..) = match evaluated {
+            Object::Function {
+                parameters, body, ..
+            } => (parameters, body),
+            _ => panic!("object is not Function. got={:#?}", evaluated),
+        };
+
+        if parameters.len() != 1 {
+            panic!(
+                "function has wrong parameters. Parameters={:#?}",
+                parameters
+            );
+        }
+
+        if parameters[0].to_string() != "x" {
+            panic!("parameter is not 'x'. got={:#?}", parameters[0].to_string());
+        }
+    });
+}
+
+#[test]
+fn test_function_calls() {
+    let input: Vec<String> = vec![
+        sf!("let identity = fn(x) { x; }; identity(5);"),
+        sf!("let identity = fn(x) { return x; }; identity(5);"),
+        sf!("let double = fn(x) { x * 2; }; double(5);"),
+        sf!("let add = fn(x, y) { x + y; }; add(5, 5);"),
+        sf!("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));"),
+        sf!("fn(x) { x; }(5)"),
+        sf!("let double = fn(x) { x + x; };
+        let triple = fn(x, y) { x + y(x);};
+        triple(2, double)"),
+    ];
+    let results: Vec<i64> = vec![5, 5, 10, 10, 20, 5, 6];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        test_int_obj(evaluated, *r);
+    });
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);
     let program = p.parse_program();
     let mut env = Environment::new();
 
-    println!("{:#?}", program.statements);
+    // println!("{:#?}", program.statements);
 
     eval_statements(program.statements, &mut env, true)
 }
