@@ -10,7 +10,7 @@ impl Parser {
 
         self.next_token();
 
-        while !self.curr_token_is(TokenType::RBRACE) && !self.curr_token_is(TokenType::EOF) {
+        while !self.curr_token_is(TokenType::RBRACE) || self.curr_token_is(TokenType::EOF) {
             let parsed_stmt = self.parse_statement().unwrap();
             stmt.add_block_stmt(parsed_stmt);
             self.next_token();
