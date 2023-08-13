@@ -18,40 +18,32 @@ pub fn eval(stmt: Statement) -> Object {
     match stmt {
         Statement::LetStatement { token, name, value } => todo!(),
         Statement::ReturnStatement { token, value } => todo!(),
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => eval_expr(expression.clone()),
-        Statement::BlockStatement {
-            token: _,
-            statements,
-        } => eval_statements(statements, false),
+        Statement::ExpressionStatement { expression, .. } => eval_expr(expression.clone()),
+        Statement::BlockStatement { statements, .. } => eval_statements(statements, false),
     }
 }
 
 fn eval_expr(expr: Expression) -> Object {
     match expr {
         Expression::Identifier { token, value } => todo!(),
-        Expression::IntegerLiteral { token: _, value } => Object::Integer {
+        Expression::IntegerLiteral { value, .. } => Object::Integer {
             value: value.into(),
         },
-        Expression::BooleanLiteral { token: _, value } => Object::get_bool_obj(value),
+        Expression::BooleanLiteral { value, .. } => Object::get_bool_obj(value),
         Expression::Prefix {
-            token: _,
-            operator,
-            right,
+            operator, right, ..
         } => eval_prefix_expr(operator, eval_expr(*right)),
         Expression::Infix {
-            token: _,
             left,
             operator,
             right,
+            ..
         } => eval_infix_expr(eval_expr(*left), operator, eval_expr(*right)),
         Expression::IfExpression {
-            token: _,
             condition,
             consequence,
             alternative,
+            ..
         } => eval_if_expr(condition, consequence, alternative),
         Expression::FuncExpression {
             token,

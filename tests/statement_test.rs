@@ -47,11 +47,7 @@ fn test_let_statement(stmt: Statement, name: String) -> bool {
     }
 
     let stmt_name = match stmt {
-        Statement::LetStatement {
-            token: _,
-            name,
-            value: _,
-        } => name.clone(),
+        Statement::LetStatement { name, .. } => name.clone(),
         _ => panic!("Statement is not LET"),
     };
 

@@ -54,36 +54,14 @@ pub enum Expression {
 impl Expression {
     fn get_token(&self) -> TokenType {
         match self {
-            Expression::Identifier { token, value: _ } => token.token_type,
-            Expression::IntegerLiteral { token, value: _ } => token.token_type,
-            Expression::BooleanLiteral { token, value: _ } => token.token_type,
-            Expression::Prefix {
-                token,
-                operator: _,
-                right: _,
-            } => token.token_type,
-            Expression::Infix {
-                token,
-                left: _,
-                operator: _,
-                right: _,
-            } => token.token_type,
-            Expression::IfExpression {
-                token,
-                condition: _,
-                consequence: _,
-                alternative: _,
-            } => token.token_type,
-            Expression::FuncExpression {
-                token,
-                parameters: _,
-                body: _,
-            } => token.token_type,
-            Expression::CallExpression {
-                token,
-                func: _,
-                args: _,
-            } => token.token_type,
+            Expression::Identifier { token, .. } => token.token_type,
+            Expression::IntegerLiteral { token, .. } => token.token_type,
+            Expression::BooleanLiteral { token, .. } => token.token_type,
+            Expression::Prefix { token, .. } => token.token_type,
+            Expression::Infix { token, .. } => token.token_type,
+            Expression::IfExpression { token, .. } => token.token_type,
+            Expression::FuncExpression { token, .. } => token.token_type,
+            Expression::CallExpression { token, .. } => token.token_type,
             Expression::NoExpression => TokenType::ILLEGAL,
         }
     }
@@ -92,55 +70,31 @@ impl Expression {
 impl Node for Expression {
     fn token_literal(&self) -> &str {
         match self {
-            Expression::Identifier { token, value: _ } => &token.literal,
-            Expression::IntegerLiteral { token, value: _ } => &token.literal,
-            Expression::BooleanLiteral { token, value: _ } => &token.literal,
-            Expression::Prefix {
-                token,
-                operator: _,
-                right: _,
-            } => &token.literal,
-            Expression::Infix {
-                token,
-                left: _,
-                operator: _,
-                right: _,
-            } => &token.literal,
-            Expression::IfExpression {
-                token,
-                condition: _,
-                consequence: _,
-                alternative: _,
-            } => &token.literal,
-            Expression::FuncExpression {
-                token,
-                parameters: _,
-                body: _,
-            } => &token.literal,
-            Expression::CallExpression {
-                token,
-                func: _,
-                args: _,
-            } => &token.literal,
+            Expression::Identifier { token, .. } => &token.literal,
+            Expression::IntegerLiteral { token, .. } => &token.literal,
+            Expression::BooleanLiteral { token, .. } => &token.literal,
+            Expression::Prefix { token, .. } => &token.literal,
+            Expression::Infix { token, .. } => &token.literal,
+            Expression::IfExpression { token, .. } => &token.literal,
+            Expression::FuncExpression { token, .. } => &token.literal,
+            Expression::CallExpression { token, .. } => &token.literal,
             Expression::NoExpression => "\0",
         }
     }
 
     fn to_string(&self) -> String {
         match self {
-            Expression::Identifier { token: _, value } => value.clone(),
-            Expression::IntegerLiteral { token: _, value } => value.to_string(),
-            Expression::BooleanLiteral { token: _, value } => value.to_string(),
+            Expression::Identifier { value, .. } => value.clone(),
+            Expression::IntegerLiteral { value, .. } => value.to_string(),
+            Expression::BooleanLiteral { value, .. } => value.to_string(),
             Expression::Prefix {
-                token: _,
-                operator,
-                right,
+                operator, right, ..
             } => sf!(format!("({}{})", operator, right.to_string())),
             Expression::Infix {
-                token: _,
                 left,
                 operator,
                 right,
+                ..
             } => sf!(format!(
                 "({} {} {})",
                 left.to_string(),
@@ -148,10 +102,10 @@ impl Node for Expression {
                 right.to_string()
             )),
             Expression::IfExpression {
-                token: _,
                 condition,
                 consequence,
                 alternative,
+                ..
             } => {
                 let mut if_part: String = sf!(format!(
                     "if {} {}",
@@ -165,9 +119,7 @@ impl Node for Expression {
                 if_part
             }
             Expression::FuncExpression {
-                token: _,
-                parameters,
-                body,
+                parameters, body, ..
             } => {
                 let mut func = String::from("fn(");
                 let len = parameters.len();
@@ -181,11 +133,7 @@ impl Node for Expression {
                 func.push_str(body.to_string().as_str());
                 func
             }
-            Expression::CallExpression {
-                token: _,
-                func,
-                args,
-            } => {
+            Expression::CallExpression { func, args, .. } => {
                 let mut call = String::from(func.to_string() + "(");
                 let len = args.len();
                 args.iter().enumerate().for_each(|(i, arg)| {
@@ -226,12 +174,8 @@ pub enum Statement {
 impl Node for Statement {
     fn token_literal(&self) -> &str {
         match self {
-            Statement::LetStatement {
-                token,
-                name: _,
-                value: _,
-            } => &token.literal,
-            Statement::ReturnStatement { token, value: _ } => &token.literal,
+            Statement::LetStatement { token, .. } => &token.literal,
+            Statement::ReturnStatement { token, .. } => &token.literal,
             _ => "\0",
         }
     }
@@ -249,16 +193,10 @@ impl Node for Statement {
             Statement::ReturnStatement { token, value } => {
                 format!("{} {:#?};", token.literal, value.to_string())
             }
-            Statement::ExpressionStatement {
-                token: _,
-                expression,
-            } => {
+            Statement::ExpressionStatement { expression, .. } => {
                 format!("{}", expression.to_string())
             }
-            Statement::BlockStatement {
-                token: _,
-                statements,
-            } => {
+            Statement::BlockStatement { statements, .. } => {
                 let mut blk_stmt = String::from("{ ");
                 statements
                     .iter()
@@ -313,26 +251,15 @@ impl Statement {
 
     pub fn set_let_name(&mut self, ident: Expression) {
         match self {
-            Statement::LetStatement {
-                token: _,
-                ref mut name,
-                value: _,
-            } => *name = ident,
+            Statement::LetStatement { ref mut name, .. } => *name = ident,
             _ => (),
         }
     }
 
     pub fn set_value(&mut self, expr_value: Expression) {
         match self {
-            Statement::LetStatement {
-                token: _,
-                name: _,
-                ref mut value,
-            } => *value = expr_value,
-            Statement::ReturnStatement {
-                token: _,
-                ref mut value,
-            } => *value = expr_value,
+            Statement::LetStatement { ref mut value, .. } => *value = expr_value,
+            Statement::ReturnStatement { ref mut value, .. } => *value = expr_value,
             _ => (),
         }
     }
@@ -362,10 +289,7 @@ impl Statement {
 
     pub fn set_block_token(&mut self, blk_token: Token) {
         match self {
-            Statement::BlockStatement {
-                ref mut token,
-                statements: _,
-            } => *token = blk_token,
+            Statement::BlockStatement { ref mut token, .. } => *token = blk_token,
             _ => (),
         }
     }
@@ -373,8 +297,7 @@ impl Statement {
     pub fn add_block_stmt(&mut self, stmt: Statement) {
         match self {
             Statement::BlockStatement {
-                token: _,
-                ref mut statements,
+                ref mut statements, ..
             } => statements.push(stmt),
             _ => (),
         }

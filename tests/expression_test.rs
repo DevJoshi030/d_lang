@@ -25,10 +25,7 @@ fn test_identifier_expression() {
     let stmt = program.statements.get(0).unwrap();
 
     let expr = match stmt {
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => expression.clone(),
+        Statement::ExpressionStatement { expression, .. } => expression.clone(),
         _ => panic!("Statement is not EXPRESSION"),
     };
 
@@ -57,10 +54,7 @@ fn test_integer_literal_expression() {
     let stmt = program.statements.get(0).unwrap();
 
     let expr = match stmt {
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => expression.clone(),
+        Statement::ExpressionStatement { expression, .. } => expression.clone(),
         _ => panic!("Statement is not EXPRESSION"),
     };
 
@@ -90,10 +84,7 @@ fn test_prefix_expressions() {
         let stmt = program.statements.get(0).unwrap();
 
         let expr = match stmt {
-            Statement::ExpressionStatement {
-                token: _,
-                expression,
-            } => expression.clone(),
+            Statement::ExpressionStatement { expression, .. } => expression.clone(),
             _ => panic!("Statement is not EXPRESSION"),
         };
 
@@ -143,10 +134,7 @@ fn test_infix_expressions() {
         let stmt = program.statements.get(0).unwrap();
 
         let expr = match stmt {
-            Statement::ExpressionStatement {
-                token: _,
-                expression,
-            } => expression.clone(),
+            Statement::ExpressionStatement { expression, .. } => expression.clone(),
             _ => panic!("Statement is not EXPRESSION"),
         };
 
@@ -187,10 +175,7 @@ fn test_if_expression() {
     let stmt = program.statements.get(0).unwrap();
 
     let expr = match stmt {
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => expression.clone(),
+        Statement::ExpressionStatement { expression, .. } => expression.clone(),
         _ => panic!("Statement is not EXPRESSION"),
     };
 
@@ -236,10 +221,7 @@ fn test_func_expression() {
     let stmt = program.statements.get(0).unwrap();
 
     let expr = match stmt {
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => expression.clone(),
+        Statement::ExpressionStatement { expression, .. } => expression.clone(),
         _ => panic!("Statement is not EXPRESSION"),
     };
 
@@ -274,10 +256,7 @@ fn test_call_expression() {
     let stmt = program.statements.get(0).unwrap();
 
     let expr = match stmt {
-        Statement::ExpressionStatement {
-            token: _,
-            expression,
-        } => expression.clone(),
+        Statement::ExpressionStatement { expression, .. } => expression.clone(),
         _ => panic!("Statement is not EXPRESSION"),
     };
 

@@ -47,10 +47,7 @@ fn test_operator_precedence() {
         let stmt = program.statements.get(0).unwrap();
 
         let expr = match stmt {
-            Statement::ExpressionStatement {
-                token: _,
-                expression,
-            } => expression.clone(),
+            Statement::ExpressionStatement { expression, .. } => expression.clone(),
             _ => panic!("Statement is not EXPRESSION"),
         };
 
