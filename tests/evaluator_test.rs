@@ -100,6 +100,29 @@ fn test_if_else_expr() {
     })
 }
 
+#[test]
+fn test_return_expr() {
+    let input: Vec<String> = vec![
+        sf!("return 10;"),
+        sf!("return 10;9;"),
+        sf!("return 2 * 5; 9;"),
+        sf!("9; return 2 * 5; 9;"),
+        sf!("if (10 > 1) {
+                if (10 > 1) {
+                    return 10;
+                }
+                return 1;
+            }
+        "),
+    ];
+    let results: Vec<i64> = vec![10, 10, 10, 10, 10];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        test_int_obj(evaluated, *r);
+    });
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);

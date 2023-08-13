@@ -5,21 +5,29 @@ use crate::{
 
 pub fn eval_statements(statements: Vec<Statement>, p_req: bool) -> Object {
     let mut result = Object::Null {};
-    statements.iter().for_each(|stmt| {
+    for stmt in statements {
         result = eval(stmt.clone());
         if p_req {
             println!("{:#?}", result);
         }
-    });
+        match result {
+            Object::Return { value } => return *value,
+            _ => (),
+        }
+    }
     result
 }
 
 pub fn eval(stmt: Statement) -> Object {
     match stmt {
         Statement::LetStatement { token, name, value } => todo!(),
-        Statement::ReturnStatement { token, value } => todo!(),
-        Statement::ExpressionStatement { expression, .. } => eval_expr(expression.clone()),
-        Statement::BlockStatement { statements, .. } => eval_statements(statements, false),
+        Statement::ReturnStatement { value, .. } => Object::Return {
+            value: Box::new(eval_expr(value)),
+        },
+        Statement::ExpressionStatement { expression, .. } => eval_expr(expression),
+        Statement::BlockStatement { statements, .. } => Object::Return {
+            value: Box::new(eval_statements(statements, false)),
+        },
     }
 }
 

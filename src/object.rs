@@ -4,14 +4,16 @@ use macros::sf;
 pub enum Object {
     Integer { value: i64 },
     Boolean { value: bool },
+    Return { value: Box<Object> },
     Null {},
 }
 
 impl Object {
     pub fn get_type(&self) -> String {
         match self {
-            Object::Integer { value: _ } => sf!("INTEGER"),
-            Object::Boolean { value: _ } => sf!("BOOLEAN"),
+            Object::Integer { .. } => sf!("INTEGER"),
+            Object::Boolean { .. } => sf!("BOOLEAN"),
+            Object::Return { .. } => sf!("RETURN"),
             Object::Null {} => sf!("NULL"),
         }
     }
@@ -20,6 +22,7 @@ impl Object {
         match self {
             Object::Integer { value } => sf!(format!("{}", value)),
             Object::Boolean { value } => sf!(format!("{}", value)),
+            Object::Return { value } => sf!(format!("{}", value.inspect())),
             Object::Null {} => sf!("null"),
         }
     }
