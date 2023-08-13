@@ -1,6 +1,7 @@
 use std::env;
 
 mod ast;
+mod environment;
 mod evaluator;
 pub mod lexer;
 mod object;

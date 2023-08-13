@@ -1,4 +1,7 @@
-use d_lang::{evaluator::eval_statements, lexer::Lexer, object::Object, parser::Parser};
+use d_lang::{
+    environment::Environment, evaluator::eval_statements, lexer::Lexer, object::Object,
+    parser::Parser,
+};
 use macros::sf;
 
 #[test]
@@ -138,6 +141,7 @@ fn test_errors() {
                 }
                 return 1;
             }"),
+        sf!("foobar;"),
     ];
     let results: Vec<&str> = vec![
         "type mismatch: INTEGER + BOOLEAN",
@@ -147,6 +151,7 @@ fn test_errors() {
         "unknown operator: BOOLEAN + BOOLEAN",
         "unknown operator: BOOLEAN + BOOLEAN",
         "unknown operator: BOOLEAN + BOOLEAN",
+        "identifier not found: foobar",
     ];
 
     results.iter().enumerate().for_each(|(i, r)| {
@@ -161,14 +166,31 @@ fn test_errors() {
     });
 }
 
+#[test]
+fn test_let_statements() {
+    let input: Vec<String> = vec![
+        sf!("let a = 5; a;"),
+        sf!("let a = 5 * 5; a;"),
+        sf!("let a = 5; let b = a; b;"),
+        sf!("let a = 5; let b = a; let c = a + b + 5; c;"),
+    ];
+    let results: Vec<i64> = vec![5, 25, 5, 15];
+
+    results.iter().enumerate().for_each(|(i, r)| {
+        let evaluated = test_eval(input.get(i).unwrap().clone());
+        test_int_obj(evaluated, *r);
+    });
+}
+
 fn test_eval(input: String) -> Object {
     let l = Lexer::new(input.chars().collect());
     let mut p = Parser::new(l);
     let program = p.parse_program();
+    let mut env = Environment::new();
 
     println!("{:#?}", program.statements);
 
-    eval_statements(program.statements, true)
+    eval_statements(program.statements, &mut env, true)
 }
 
 fn test_int_obj(eval: Object, r: i64) {

@@ -1,6 +1,6 @@
 use macros::sf;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Object {
     Integer { value: i64 },
     Boolean { value: bool },

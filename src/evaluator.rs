@@ -2,13 +2,14 @@ use macros::sf;
 
 use crate::{
     ast::{Expression, Statement},
+    environment::Environment,
     object::Object,
 };
 
-pub fn eval_statements(statements: Vec<Statement>, p_req: bool) -> Object {
+pub fn eval_statements(statements: Vec<Statement>, env: &mut Environment, p_req: bool) -> Object {
     let mut result = Object::Null {};
     for stmt in statements {
-        result = eval(stmt.clone());
+        result = eval(stmt.clone(), env);
         if p_req {
             println!("{:#?}", result);
         }
@@ -21,11 +22,27 @@ pub fn eval_statements(statements: Vec<Statement>, p_req: bool) -> Object {
     result
 }
 
-pub fn eval(stmt: Statement) -> Object {
+pub fn eval(stmt: Statement, env: &mut Environment) -> Object {
     match stmt {
-        Statement::LetStatement { token, name, value } => todo!(),
+        Statement::LetStatement { name, value, .. } => {
+            let evaluated = eval_expr(value, env);
+            let mut final_eval = evaluated.clone();
+            if let Object::Error { .. } = evaluated {
+                return evaluated;
+            }
+            if let Object::Return { value } = evaluated.clone() {
+                final_eval = *value;
+            }
+            if let Expression::Identifier {
+                value: key_name, ..
+            } = name
+            {
+                env.set(key_name, final_eval);
+            }
+            return evaluated;
+        }
         Statement::ReturnStatement { value, .. } => {
-            let evaluated = eval_expr(value);
+            let evaluated = eval_expr(value, env);
             if let Object::Error { .. } = evaluated {
                 return evaluated;
             }
@@ -33,9 +50,9 @@ pub fn eval(stmt: Statement) -> Object {
                 value: Box::new(evaluated),
             }
         }
-        Statement::ExpressionStatement { expression, .. } => eval_expr(expression),
+        Statement::ExpressionStatement { expression, .. } => eval_expr(expression, env),
         Statement::BlockStatement { statements, .. } => {
-            let evaluated = eval_statements(statements, false);
+            let evaluated = eval_statements(statements, env, false);
             if let Object::Error { .. } = evaluated {
                 return evaluated;
             }
@@ -46,9 +63,17 @@ pub fn eval(stmt: Statement) -> Object {
     }
 }
 
-fn eval_expr(expr: Expression) -> Object {
+fn eval_expr(expr: Expression, env: &mut Environment) -> Object {
     match expr {
-        Expression::Identifier { token, value } => todo!(),
+        Expression::Identifier { value, .. } => {
+            let ident = env.get(value.clone());
+            if let Some(obj) = ident {
+                return obj.clone();
+            }
+            Object::Error {
+                message: sf!(format!("identifier not found: {}", value)),
+            }
+        }
         Expression::IntegerLiteral { value, .. } => Object::Integer {
             value: value.into(),
         },
@@ -56,7 +81,7 @@ fn eval_expr(expr: Expression) -> Object {
         Expression::Prefix {
             operator, right, ..
         } => {
-            let evaluated = eval_expr(*right);
+            let evaluated = eval_expr(*right, env);
             if let Object::Error { .. } = evaluated {
                 return evaluated;
             }
@@ -68,11 +93,11 @@ fn eval_expr(expr: Expression) -> Object {
             right,
             ..
         } => {
-            let evaluated_left = eval_expr(*left);
+            let evaluated_left = eval_expr(*left, env);
             if let Object::Error { .. } = evaluated_left {
                 return evaluated_left;
             }
-            let evaluated_right = eval_expr(*right);
+            let evaluated_right = eval_expr(*right, env);
             if let Object::Error { .. } = evaluated_right {
                 return evaluated_right;
             }
@@ -83,7 +108,7 @@ fn eval_expr(expr: Expression) -> Object {
             consequence,
             alternative,
             ..
-        } => eval_if_expr(condition, consequence, alternative),
+        } => eval_if_expr(condition, consequence, alternative, env),
         Expression::FuncExpression {
             token,
             parameters,
@@ -224,8 +249,9 @@ fn eval_if_expr(
     condition: Box<Expression>,
     consequence: Box<Statement>,
     alternative: Box<Option<Statement>>,
+    env: &mut Environment,
 ) -> Object {
-    let cond = eval_expr(*condition);
+    let cond = eval_expr(*condition, env);
     if let Object::Error { .. } = cond {
         return cond;
     }
@@ -236,9 +262,9 @@ fn eval_if_expr(
     };
 
     if cond_val {
-        eval(*consequence)
+        eval(*consequence, env)
     } else if let Some(stmt) = *alternative {
-        eval(stmt)
+        eval(stmt, env)
     } else {
         Object::Null {}
     }
