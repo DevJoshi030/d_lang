@@ -77,7 +77,7 @@ fn eval_expr(expr: Expression, env: &mut Environment) -> Object {
         Expression::IntegerLiteral { value, .. } => Object::Integer {
             value: value.into(),
         },
-        Expression::BooleanLiteral { value, .. } => Object::get_bool_obj(value),
+        Expression::BooleanLiteral { value, .. } => Object::Boolean { value },
         Expression::Prefix {
             operator, right, ..
         } => {
